@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EvolveAI - Your Habit Dashboard</title>
+  <!-- Load Poppins font and Font Awesome for icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* CSS Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    :root {
+      --primary: #00b4db;
+      --primary-dark: #0083b0;
+      --primary-gradient: linear-gradient(to right, #00b4db, #0083b0);
+      --primary-light: rgba(0, 180, 219, 0.2);
+      --primary-lighter: rgba(0, 180, 219, 0.1);
+      --bg-dark: #0a0a0a; /* Slightly less harsh black */
+      --bg-light: #f4f7f6; /* Off-white */
+      --text-dark: #1a1a1a;
+      --text-light: #e0e0e0;
+      --gray-dark: rgba(255, 255, 255, 0.6); /* Adjusted opacity */
+      --gray-light: rgba(0, 0, 0, 0.6); /* Adjusted opacity */
+      --card-bg-dark: rgba(255, 255, 255, 0.05); /* More subtle */
+      --card-bg-light: #ffffff; /* White cards in light mode */
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+      --card-border-light: rgba(0, 0, 0, 0.1);
+      --success: #4CAF50;
+      --warning: #FFC107;
+      --danger: #F44336;
+      --neutral: #9E9E9E;
+      --level-bar-bg-dark: rgba(255, 255, 255, 0.1);
+      --level-bar-bg-light: rgba(0, 0, 0, 0.1);
+      --modal-bg-dark: #181818;
+      --modal-bg-light: #ffffff;
+      --input-bg-dark: rgba(255, 255, 255, 0.07);
+      --input-bg-light: rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      font-size: 15px; /* Base font size */
+    }
+
+    body.light-mode {
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      --card-bg-dark: var(--card-bg-light); /* Use light vars for components */
+      --card-border-dark: var(--card-border-light);
+      --level-bar-bg-dark: var(--level-bar-bg-light);
+      --modal-bg-dark: var(--modal-bg-light);
+      --input-bg-dark: var(--input-bg-light);
+      --gray-dark: var(--gray-light);
+      --text-light: var(--text-dark); /* Ensure text colors adapt */
+    }
+
+    /* Layout Styles */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 250px 1fr; /* Fixed sidebar width */
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main";
+      min-height: 100vh;
+    }
+
+    @media (max-width: 992px) { /* Adjusted breakpoint */
+      .dashboard-container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "header"
+          "main";
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 250px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out; /* Smoother transition */
+        z-index: 100; /* Ensure sidebar is above main content */
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2); /* Add shadow when open */
+      }
+
+      .sidebar.mobile-visible {
+        transform: translateX(0);
+      }
+
+      .mobile-menu-btn {
+        display: flex; /* Show button on smaller screens */
+      }
+
+      .close-sidebar {
+        display: block; /* Show close button in mobile sidebar */
+      }
+
+      .main-content {
+        padding: 20px; /* Reduce padding on mobile */
+      }
+
+      .dashboard-grid {
+        grid-template-columns: 1fr; /* Stack cards on small screens */
+        gap: 20px;
+      }
+
+      .calendar-card {
+        grid-column: span 1; /* Ensure calendar takes full width */
+      }
+    }
+
+    /* Header Styles */
+    .header {
+      grid-area: header;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px; /* Slightly reduced padding */
+      border-bottom: 1px solid var(--card-border-dark);
+      background-color: rgba(10, 10, 10, 0.5); /* Darker, more subtle */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 10;
+      position: sticky;
+      top: 0;
+    }
+
+    body.light-mode .header {
+      background-color: rgba(255, 255, 255, 0.8); /* Lighter bg */
+      border-bottom: 1px solid var(--card-border-light);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .mobile-menu-btn {
+      display: none; /* Hidden by default */
+      align-items: center;
+      justify-content: center;
+      width: 36px; /* Slightly smaller */
+      height: 36px;
+      font-size: 1rem;
+      background: var(--card-bg-dark);
+      border: 1px solid var(--card-border-dark);
+      border-radius: 50%;
+      cursor: pointer;
+      margin-right: 15px;
+      color: var(--text-light);
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .mobile-menu-btn:hover {
+       background: var(--primary-light);
+       border-color: var(--primary);
+    }
+
+    .logo {
+      font-size: 1.4rem; /* Slightly smaller */
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  font-size: 0.9rem;
+  text-decoration: none; /* Remove underline */
+  cursor: pointer; /* Ensure it looks clickable */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-avatar:hover {
+  transform: scale(1.05); /* Slight grow effect on hover */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.1rem; /* Slightly smaller */
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.3s ease, color 0.3s ease;
+      padding: 5px; /* Add padding for easier clicking */
+    }
+
+    .theme-toggle:hover {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    body.light-mode .theme-toggle {
+      color: var(--text-dark);
+    }
+    body.light-mode .theme-toggle:hover {
+       color: var(--primary);
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      grid-area: sidebar;
+      background-color: rgba(18, 18, 18, 0.7); /* Slightly more opaque */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-right: 1px solid var(--card-border-dark);
+      padding: 25px 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column; /* Arrange items vertically */
+    }
+
+    body.light-mode .sidebar {
+      background-color: rgba(250, 250, 250, 0.85);
+      border-right: 1px solid var(--card-border-light);
+    }
+
+    .sidebar-header {
+      padding: 0 25px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border-dark); /* Add separator */
+      margin-bottom: 15px;
+    }
+    body.light-mode .sidebar-header {
+        border-bottom-color: var(--card-border-light);
+    }
+     .sidebar-header h3 {
+         font-size: 1rem;
+         font-weight: 600;
+     }
+
+    .close-sidebar {
+      display: none; /* Hidden by default, shown via media query */
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 5px;
+    }
+    body.light-mode .close-sidebar {
+      color: var(--text-dark);
+    }
+
+    .nav-section {
+      margin-bottom: 20px;
+      padding: 0 10px; /* Add horizontal padding */
+    }
+
+    .nav-section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-dark);
+      padding: 0 15px 10px 15px; /* Adjusted padding */
+    }
+
+    .nav-list {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 2px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px; /* Increased padding */
+      color: var(--text-light);
+      text-decoration: none;
+      transition: background-color 0.2s, color 0.2s, border-left-color 0.2s;
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-radius: 6px; /* Rounded corners */
+      border-left: 3px solid transparent; /* Placeholder for active state */
+    }
+
+    .nav-link:hover {
+      background-color: var(--primary-lighter);
+      color: var(--primary); /* Highlight text on hover */
+    }
+
+    .nav-link.active {
+      background-color: var(--primary-light);
+      border-left-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    body.light-mode .nav-link {
+      color: var(--text-dark);
+    }
+    body.light-mode .nav-link:hover {
+       color: var(--primary);
+    }
+    body.light-mode .nav-link.active {
+      color: var(--primary);
+    }
+
+
+    .nav-link i {
+      width: 20px;
+      margin-right: 12px; /* Increased spacing */
+      font-size: 1rem; /* Slightly smaller icon */
+      color: var(--gray-dark);
+      text-align: center;
+      transition: color 0.2s;
+    }
+    .nav-link:hover i,
+    .nav-link.active i {
+      color: var(--primary);
+    }
+    body.light-mode .nav-link i {
+       color: var(--gray-light);
+    }
+    body.light-mode .nav-link:hover i,
+    body.light-mode .nav-link.active i {
+       color: var(--primary);
+    }
+
+    /* User stats in sidebar */
+    .user-stats {
+      padding: 20px 25px;
+      margin-top: auto; /* Push stats to the bottom */
+    }
+
+    .stats-card {
+      background: var(--card-bg-dark);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--card-border-dark);
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px; /* Increased spacing */
+    }
+    .stat-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .stat-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; /* Slightly smaller */
+      height: 38px;
+      border-radius: 10px;
+      margin-right: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      flex-shrink: 0; /* Prevent shrinking */
+    }
+    .stat-icon i { font-size: 0.9rem; }
+
+    .stat-info {
+      flex: 1;
+      min-width: 0; /* Prevent text overflow issues */
+    }
+
+    .stat-value {
+      font-size: 1.1rem; /* Slightly smaller */
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap; /* Prevent wrapping */
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stat-label {
+      font-size: 0.75rem; /* Smaller label */
+      color: var(--gray-dark);
+      white-space: nowrap;
+    }
+
+
+    .level-progress {
+      margin-top: 20px; /* More space above progress */
+    }
+
+    .level-bar {
+      height: 6px; /* Thinner bar */
+      background: var(--level-bar-bg-dark);
+      border-radius: 3px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .level-fill {
+      height: 100%;
+      width: 0%; /* Start at 0, controlled by JS */
+      background: var(--primary-gradient);
+      border-radius: 3px;
+      transition: width 0.5s ease-out; /* Animate width changes */
+    }
+
+    .level-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+    .level-text span:first-child { font-weight: 600;}
+
+    .xp-to-next {
+      color: var(--gray-dark);
+    }
+
+    /* Main Content Area */
+    .main-content {
+      grid-area: main;
+      padding: 30px 40px; /* More horizontal padding */
+      overflow-y: auto;
+    }
+
+    /* Dashboard Welcome Section */
+    .dashboard-welcome {
+      margin-bottom: 30px;
+    }
+
+    .welcome-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 5px; /* Less space */
+    }
+
+    .welcome-subtitle {
+      color: var(--gray-dark);
+      font-size: 1rem;
+    }
+
+
+    /* Dashboard Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adjust min size */
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-card {
+      background: var(--card-bg-dark);
+      backdrop-filter: blur(5px); /* Subtle blur */
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid var(--card-border-dark);
+      border-radius: 12px;
+      padding: 25px; /* Uniform padding */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex; /* Use flex for better internal layout */
+      flex-direction: column;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-3px); /* Subtle lift */
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    body.light-mode .dashboard-card:hover {
+       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start; /* Align items top */
+      margin-bottom: 20px; /* Increased spacing */
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.05rem; /* Slightly smaller */
+      line-height: 1.3;
+    }
+
+    .card-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px; /* Match stats icon size */
+      height: 38px;
+      border-radius: 10px;
+      background: var(--primary-light);
+      color: var(--primary);
+      flex-shrink: 0;
+      margin-left: 10px; /* Add space */
+    }
+    .card-icon i { font-size: 1rem; }
+
+    /* Streak Cards */
+    .streak-card .streak-info, .points-card .streak-info { /* Apply to points card too */
+      display: flex;
+      align-items: baseline; /* Align by baseline */
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .streak-card .streak-count, .points-card .streak-count {
+      font-size: 2.2rem; /* Slightly smaller */
+      font-weight: 700;
+      line-height: 1;
+      color: var(--primary); /* Highlight count */
+    }
+     body.light-mode .streak-card .streak-count,
+     body.light-mode .points-card .streak-count {
+        color: var(--primary-dark);
+     }
+
+
+    .streak-card .streak-label, .points-card .streak-label {
+      color: var(--gray-dark);
+      font-size: 0.85rem;
+    }
+    .streak-card .streak-label div:last-child,
+    .points-card .streak-label div:last-child {
+       font-size: 0.75rem;
+       opacity: 0.8;
+    }
+
+
+    .streak-card .streak-subtitle, .points-card .streak-subtitle {
+      color: var(--gray-dark);
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      line-height: 1.4;
+    }
+
+
+    .streak-dates {
+      display: flex;
+      justify-content: space-between;
+      gap: 5px; /* Add gap between bubbles */
+      margin-top: auto; /* Push to bottom if card grows */
+    }
+
+    .date-bubble {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; /* Slightly larger */
+      height: 32px;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--gray-dark);
+      border: 1px solid transparent; /* Placeholder for today */
+    }
+
+    body.light-mode .date-bubble {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--gray-light);
+    }
+
+    .date-bubble.completed {
+      background: var(--primary);
+      color: white;
+    }
+
+    .date-bubble.today {
+      border: 1.5px solid var(--primary); /* Thinner border */
+      color: var(--text-light);
+    }
+    body.light-mode .date-bubble.today {
+       color: var(--text-dark);
+    }
+
+    /* Habits List Cards */
+    .habits-card {
+      min-height: 300px; /* Ensure minimum height */
+    }
+
+    .habits-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .habits-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .add-habit-btn {
+      display: flex;
+      align-items: center;
+      background: var(--primary-gradient);
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem; /* Smaller text */
+      font-weight: 500;
+      transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap; /* Prevent wrapping */
+    }
+
+    .add-habit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 131, 176, 0.3);
+    }
+
+    .add-habit-btn i {
+      margin-right: 6px;
+      font-size: 0.8rem; /* Smaller icon */
+    }
+
+    .habits-list {
+      list-style: none;
+      max-height: 350px; /* Limit height and allow scroll if needed */
+      overflow-y: auto;
+      padding-right: 5px; /* Space for scrollbar */
+    }
+     /* Custom scrollbar for habit list */
+    .habits-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .habits-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .habits-list::-webkit-scrollbar-thumb {
+      background-color: var(--primary-light);
+      border-radius: 10px;
+    }
+    body.light-mode .habits-list::-webkit-scrollbar-thumb {
+       background-color: rgba(0, 0, 0, 0.2);
+    }
+
+
+    .habit-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0; /* Reduced padding */
+      border-bottom: 1px solid var(--card-border-dark);
+      transition: background-color 0.3s ease;
+    }
+    .habit-item:last-child {
+      border-bottom: none;
+    }
+    .habit-item.completed-visual-feedback { /* Class for feedback */
+       background-color: var(--primary-lighter);
+    }
+
+
+    .habit-check {
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .habit-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px; /* Slightly smaller */
+      height: 20px;
+      background-color: transparent;
+      border: 1.5px solid var(--gray-dark); /* Use gray for border */
+      border-radius: 50%;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative; /* Needed for checkmark */
+      vertical-align: middle; /* Align better with text */
+    }
+    body.light-mode .habit-checkbox {
+       border-color: var(--gray-light);
+    }
+
+    .habit-checkbox:hover {
+        border-color: var(--primary);
+    }
+
+    .habit-checkbox:checked {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .habit-checkbox:checked::after {
+      content: '\f00c'; /* Checkmark icon */
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      color: white;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.65rem; /* Smaller checkmark */
+    }
+
+    .habit-info {
+      flex: 1;
+      min-width: 0; /* Prevent overflow */
+      margin-right: 10px; /* Space before points */
+    }
+
+    .habit-name {
+      font-weight: 500;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .habit-streak {
+      font-size: 0.75rem;
+      color: var(--gray-dark);
+      display: flex;
+      align-items: center;
+      opacity: 0.9;
+    }
+
+
+    .habit-streak i {
+      color: var(--warning);
+      margin-right: 4px;
+      font-size: 0.7rem;
+    }
+
+    .habit-points {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 8px; /* Smaller padding */
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      flex-shrink: 0; /* Prevent shrinking */
+    }
+
+    /* Calendar View Card */
+    .calendar-card {
+      grid-column: span 2; /* Default span */
+    }
+     @media (max-width: 1200px) and (min-width: 993px) {
+        /* Make calendar span 1 column on medium-large screens if needed */
+         /* .calendar-card { grid-column: span 1; } */
+     }
+     @media (max-width: 992px) {
+        .calendar-card { grid-column: span 1; } /* Already set for mobile */
+     }
+
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .calendar-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px; /* Reduced gap */
+    }
+
+    .calendar-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; /* Smaller buttons */
+      height: 28px;
+      border-radius: 50%;
+      background: var(--card-bg-dark);
+      border: 1px solid var(--card-border-dark);
+      color: var(--text-light);
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .calendar-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    body.light-mode .calendar-btn {
+        background: var(--card-bg-light);
+        border-color: var(--card-border-light);
+        color: var(--text-dark);
+    }
+    body.light-mode .calendar-btn:hover {
+        background: var(--primary-lighter);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+
+    .calendar-month {
+      font-weight: 600; /* Bolder month */
+      font-size: 0.95rem;
+      min-width: 130px; /* Ensure space */
+      text-align: center;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px; /* Reduced gap */
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--gray-dark);
+      padding-bottom: 8px;
+      font-weight: 500;
+    }
+
+
+    .calendar-day {
+      aspect-ratio: 1 / 1; /* Make days square */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px; /* Smaller radius */
+      background: transparent; /* Default transparent */
+      border: 1px solid var(--card-border-dark);
+      transition: background-color 0.2s, border-color 0.2s;
+      position: relative;
+      font-size: 0.85rem;
+      cursor: default; /* Default cursor */
+      color: var(--text-light);
+    }
+    body.light-mode .calendar-day {
+       border-color: var(--card-border-light);
+       color: var(--text-dark);
+    }
+
+
+    .calendar-day:not(.other-month):hover {
+       background-color: var(--primary-lighter);
+       border-color: var(--primary-light);
+    }
+
+    .calendar-date {
+      /* font-size: 0.9rem; */ /* Removed, use parent font-size */
+      font-weight: 500;
+      z-index: 1; /* Ensure date is above indicator */
+    }
+
+    /* --- Simple Activity Indicator --- */
+    /* Add a small dot for demo. Real app needs data. */
+     .calendar-day.has-activity::after {
+        content: '';
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        opacity: 0.6;
+     }
+     /* --- End Simple Activity Indicator --- */
+
+
+     /* --- Colored Background Activity Indicator (Alternative) --- */
+     /* Comment out the dot indicator above if using this */
+    .calendar-day.high-activity { background: hsla(122, 39%, 49%, 0.3); }
+    .calendar-day.medium-activity { background: hsla(48, 100%, 53%, 0.3); }
+    .calendar-day.low-activity { background: hsla(4, 90%, 58%, 0.3); }
+    /* --- End Colored Background Indicator --- */
+
+
+    .calendar-day.today {
+      border: 1.5px solid var(--primary);
+      font-weight: 700;
+      color: var(--primary);
+    }
+    body.light-mode .calendar-day.today {
+       color: var(--primary-dark);
+    }
+
+
+    .calendar-day.other-month {
+      opacity: 0.4;
+      pointer-events: none; /* Make unclickable */
+    }
+
+    /* Progress Card */
+    .progress-card {
+       /* grid-column: span 1; */ /* Default span */
+    }
+
+    .progress-item {
+      margin-bottom: 20px; /* Increased spacing */
+    }
+    .progress-item:last-child { margin-bottom: 0; }
+
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .progress-title {
+      font-weight: 500;
+      font-size: 0.9rem; /* Slightly smaller */
+      color: var(--gray-dark);
+    }
+    body.light-mode .progress-title { color: var(--gray-light); }
+
+
+    .progress-percentage {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+
+    .progress-bar {
+      height: 6px; /* Match level bar */
+      background: var(--level-bar-bg-dark);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary-gradient);
+      border-radius: 3px;
+      transition: width 0.5s ease-out;
+    }
+
+    /* Example color variations (can be applied dynamically) */
+    .progress-fill.success { background: linear-gradient(to right, #4CAF50, #66BB6A); }
+    .progress-fill.warning { background: linear-gradient(to right, #FFC107, #FFCA28); }
+    .progress-fill.danger { background: linear-gradient(to right, #F44336, #EF5350); }
+
+    /* Badges Section */
+    .badges-section {
+      margin-top: 40px; /* More space before badges */
+    }
+
+    .badges-header {
+      margin-bottom: 25px; /* Increased space */
+    }
+
+    .badges-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .badges-subtitle {
+      color: var(--gray-dark);
+      font-size: 0.9rem;
+    }
+
+
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* Adjust min size */
+      gap: 25px; /* Increased gap */
+    }
+
+    .badge-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      opacity: 0.5; /* Default to semi-locked state */
+      transition: opacity 0.3s ease;
+    }
+    .badge-item.unlocked {
+       opacity: 1;
+    }
+
+
+    .badge-icon {
+      width: 65px; /* Slightly larger */
+      height: 65px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      background: var(--card-bg-dark); /* Default background */
+      border: 1px solid var(--card-border-dark);
+      color: var(--gray-dark); /* Default color */
+      font-size: 1.6rem;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    .badge-item.unlocked .badge-icon {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary-light);
+    }
+    /* Specific badge colors (example) */
+     .badge-item[data-badge="streak-7"].unlocked .badge-icon { background: #fff3e0; color: #ffa726; border-color: #ffe0b2; }
+     .badge-item[data-badge="perfect-week"].unlocked .badge-icon { background: #e8f5e9; color: #66bb6a; border-color: #c8e6c9;}
+
+
+    .badge-name {
+      font-size: 0.8rem;
+      font-weight: 600; /* Bolder name */
+      margin-bottom: 5px;
+      line-height: 1.3;
+    }
+
+    .badge-description {
+      font-size: 0.7rem;
+      color: var(--gray-dark);
+      line-height: 1.3;
+    }
+
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7); /* Darker overlay */
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0s linear 0.3s; /* Delay hiding visibility */
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.3s ease, visibility 0s linear 0s;
+    }
+
+    body.light-mode .modal-overlay {
+      background: rgba(50, 50, 50, 0.6); /* Adjust light mode overlay */
+    }
+
+    .modal-container {
+      width: 90%;
+      max-width: 480px; /* Slightly smaller max */
+      background: var(--modal-bg-dark);
+      border-radius: 12px;
+      padding: 30px; /* More padding */
+      transform: scale(0.95) translateY(10px); /* Start slightly smaller/lower */
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+      position: relative;
+      opacity: 0;
+      border: 1px solid var(--card-border-dark);
+    }
+
+    .modal-overlay.show .modal-container {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px; /* Position closer */
+      right: 15px;
+      background: none;
+      border: none;
+      color: var(--gray-dark);
+      font-size: 1.4rem; /* Larger icon */
+      cursor: pointer;
+      padding: 5px;
+      line-height: 1; /* Prevent extra space */
+      transition: color 0.2s;
+    }
+    .modal-close:hover {
+       color: var(--text-light);
+    }
+    body.light-mode .modal-close {
+       color: var(--gray-light);
+    }
+     body.light-mode .modal-close:hover {
+       color: var(--text-dark);
+    }
+
+
+    .modal-title {
+      font-size: 1.4rem; /* Slightly smaller */
+      font-weight: 600;
+      margin-bottom: 25px; /* More space */
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 18px; /* Slightly less space */
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 15px;
+      background: var(--input-bg-dark);
+      border: 1px solid var(--card-border-dark);
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 0.95rem; /* Consistent input font size */
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: rgba(0, 180, 219, 0.05); /* Subtle focus bg */
+    }
+     body.light-mode .form-input:focus,
+     body.light-mode .form-select:focus {
+        background-color: rgba(0, 180, 219, 0.08);
+     }
+
+
+    .form-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23cccccc' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 16px 16px;
+      padding-right: 40px; /* Ensure space for arrow */
+    }
+
+    body.light-mode .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666666' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    }
+
+    /* Utility class for slight visual feedback on click */
+    .clickable-effect {
+        transition: transform 0.1s ease;
+    }
+    .clickable-effect:active {
+        transform: scale(0.98);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header Section -->
+    <header class="header">
+      <div class="header-left">
+        <button class="mobile-menu-btn clickable-effect">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">EvolveAI</div>
+      </div>
+      <div class="header-right">
+        <button class="theme-toggle clickable-effect">
+          <i class="fas fa-moon"></i> <!-- Icon updated by JS -->
+        </button>
+        <div class="user-info">
+          <span id="userGreeting" style="font-size: 0.9rem; margin-right: 5px; display: none;">Hi, John</span>
+          <a href="settings.html" class="user-avatar clickable">JS</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h3>Menu</h3>
+        <button class="close-sidebar clickable-effect">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <h4 class="nav-section-title">Navigation</h4>
+        <ul class="nav-list">
+          <li class="nav-item"><a href="#" class="nav-link active"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-chart-line"></i><span>Analytics</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Calendar</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-trophy"></i><span>Achievements</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+        </ul>
+      </div>
+
+      <div class="user-stats">
+        <div class="stats-card">
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-fire"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="sidebarStreak">0</div>
+              <div class="stat-label">Current Streak</div>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-star"></i></div>
+            <div class="stat-info">
+              <div class="stat-value" id="sidebarPoints">0</div>
+              <div class="stat-label">Total Points</div>
+            </div>
+          </div>
+          <div class="level-progress">
+             <div class="level-text">
+               <span id="sidebarLevel">Level 1</span>
+               <span class="xp-to-next" id="sidebarXP">0/100 XP</span>
+             </div>
+            <div class="level-bar">
+              <div class="level-fill" id="sidebarLevelFill"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div class="dashboard-welcome">
+        <h1 class="welcome-title" id="welcomeName">Welcome back!</h1>
+        <p class="welcome-subtitle" id="welcomeMessage">Let's make today productive.</p>
+      </div>
+
+      <!-- Dashboard Grid -->
+      <div class="dashboard-grid">
+        <!-- Streak Card -->
+        <div class="dashboard-card streak-card">
+          <div class="card-header">
+            <h3 class="card-title">Current Streak</h3>
+            <div class="card-icon"><i class="fas fa-fire"></i></div>
+          </div>
+          <div class="streak-info">
+            <div class="streak-count" id="mainStreakCount">0</div>
+            <div class="streak-label">
+              <div>days</div>
+              <div id="streakEncouragement">Start a habit!</div>
+            </div>
+          </div>
+          <p class="streak-subtitle">Complete your habits today to extend your streak.</p>
+          <div class="streak-dates" id="streakDatesContainer">
+             <!-- Date bubbles generated by JS -->
+          </div>
+        </div>
+
+        <!-- Points Card -->
+        <div class="dashboard-card points-card"> <!-- Added class for easier selection -->
+          <div class="card-header">
+            <h3 class="card-title">Points Earned</h3>
+            <div class="card-icon"><i class="fas fa-star"></i></div>
+          </div>
+          <div class="streak-info"> <!-- Re-using streak-info structure -->
+            <div class="streak-count" id="mainPointsCount">0</div>
+            <div class="streak-label">
+              <div>total points</div>
+              <div id="pointsStatus">Keep going!</div>
+            </div>
+          </div>
+          <p class="streak-subtitle" id="pointsGoal">Earn points by completing habits.</p>
+        </div>
+
+        <!-- Habits Card -->
+        <div class="dashboard-card habits-card">
+          <div class="habits-header">
+            <h3 class="habits-title">Today's Habits</h3>
+            <button class="add-habit-btn clickable-effect" id="addHabitBtn">
+              <i class="fas fa-plus"></i>
+              <span>Add Habit</span>
+            </button>
+          </div>
+          <ul class="habits-list" id="habitsList">
+            <!-- Habits will be loaded here by JavaScript -->
+             <p id="noHabitsMessage" style="text-align: center; color: var(--gray-dark); margin-top: 30px; display: none;">No habits added yet. Click 'Add Habit' to start!</p>
+          </ul>
+        </div>
+
+        <!-- Calendar Card -->
+        <div class="dashboard-card calendar-card">
+          <div class="calendar-header">
+            <h3 class="calendar-title">Activity Calendar</h3>
+            <div class="calendar-nav">
+              <button class="calendar-btn prev-month clickable-effect" aria-label="Previous Month">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <div class="calendar-month" id="calendarMonthYear">Month Year</div>
+              <button class="calendar-btn next-month clickable-effect" aria-label="Next Month">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+          <div class="calendar-grid" id="calendarGrid">
+            <div class="calendar-weekday">Sun</div>
+            <div class="calendar-weekday">Mon</div>
+            <div class="calendar-weekday">Tue</div>
+            <div class="calendar-weekday">Wed</div>
+            <div class="calendar-weekday">Thu</div>
+            <div class="calendar-weekday">Fri</div>
+            <div class="calendar-weekday">Sat</div>
+            <!-- Calendar days will be generated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Progress Card -->
+        <div class="dashboard-card progress-card">
+          <div class="card-header">
+            <h3 class="card-title">Weekly Progress</h3> <!-- Changed to Weekly -->
+            <div class="card-icon"><i class="fas fa-chart-pie"></i></div> <!-- Changed icon -->
+          </div>
+          <div class="progress-item">
+            <div class="progress-header">
+              <div class="progress-title">Habit Completion</div>
+              <div class="progress-percentage" id="progressCompletion">0%</div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressCompletionFill" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header">
+              <div class="progress-title">Points Goal</div>
+              <div class="progress-percentage" id="progressPoints">0%</div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill success" id="progressPointsFill" style="width: 0%"></div>
+            </div>
+          </div>
+          <!-- Removed Streak Days progress as it's similar to completion -->
+        </div>
+      </div>
+
+      <!-- Badges Section -->
+      <div class="badges-section">
+        <div class="badges-header">
+          <h3 class="badges-title">Your Badges</h3>
+          <p class="badges-subtitle">Unlock achievements as you build habits.</p>
+        </div>
+        <div class="badges-grid" id="badgesGrid">
+          <!-- Badges loaded by JS -->
+           <div class="badge-item" data-badge="streak-7">
+             <div class="badge-icon"><i class="fas fa-fire"></i></div>
+             <div class="badge-name">Fire Starter</div>
+             <div class="badge-description">7-Day Streak</div>
+           </div>
+           <div class="badge-item" data-badge="perfect-week">
+             <div class="badge-icon"><i class="fas fa-check-double"></i></div>
+             <div class="badge-name">Perfect Week</div>
+             <div class="badge-description">Complete all daily habits for 7 days</div>
+           </div>
+           <div class="badge-item" data-badge="points-500">
+               <div class="badge-icon"><i class="fas fa-star"></i></div>
+               <div class="badge-name">Point Collector</div>
+               <div class="badge-description">Earn 500 points</div>
+           </div>
+           <div class="badge-item" data-badge="streak-30">
+             <div class="badge-icon"><i class="fas fa-medal"></i></div>
+             <div class="badge-name">Committed</div>
+             <div class="badge-description">30-Day Streak</div>
+           </div>
+           <div class="badge-item" data-badge="habit-master">
+             <div class="badge-icon"><i class="fas fa-trophy"></i></div>
+             <div class="badge-name">Habit Master</div>
+             <div class="badge-description">Earn 2000 points</div>
+           </div>
+            <div class="badge-item" data-badge="legendary-streak">
+             <div class="badge-icon"><i class="fas fa-gem"></i></div>
+             <div class="badge-name">Legendary</div>
+             <div class="badge-description">90-Day Streak</div>
+           </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Habit Modal -->
+  <div class="modal-overlay" id="addHabitModal">
+    <div class="modal-container">
+      <button class="modal-close clickable-effect" id="closeModal" aria-label="Close modal">
+        <i class="fas fa-times"></i>
+      </button>
+      <h3 class="modal-title">Add New Habit</h3>
+      <form id="habitForm">
+        <div class="form-group">
+          <label for="habitName" class="form-label">Habit Name</label>
+          <input type="text" id="habitName" class="form-input" placeholder="e.g. Drink 8 glasses of water" required>
+        </div>
+        <div class="form-group">
+          <label for="habitCategory" class="form-label">Category</label>
+          <select id="habitCategory" class="form-select">
+            <option value="health">Health</option>
+            <option value="fitness">Fitness</option>
+            <option value="mindfulness">Mindfulness</option>
+            <option value="learning">Learning</option>
+            <option value="productivity">Productivity</option>
+            <option value="chores">Chores</option>
+            <option value="social">Social</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="habitPoints" class="form-label">Points Value</label>
+          <select id="habitPoints" class="form-select">
+            <option value="5">5 (Easy)</option>
+            <option value="10" selected>10 (Medium)</option>
+            <option value="15">15 (Hard)</option>
+            <option value="20">20 (Challenging)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="habitFrequency" class="form-label">Frequency</label>
+          <select id="habitFrequency" class="form-select">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly (Select Day)</option> <!-- Placeholder for future -->
+            <option value="times_per_week">Times per Week</option> <!-- Placeholder -->
+          </select>
+        </div>
+        <button type="submit" class="add-habit-btn clickable-effect" style="width: 100%; margin-top: 10px; padding: 12px;">
+          <i class="fas fa-plus"></i>
+          <span>Add This Habit</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dim overlay for mobile sidebar -->
+  <div id="mobile-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99; display: none; transition: opacity 0.3s ease;"></div>
+
+
+  <script>
+    // --- DOM Elements ---
+    const body = document.body;
+    const themeToggle = document.querySelector('.theme-toggle');
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const closeSidebarBtn = document.querySelector('.close-sidebar');
+    const sidebar = document.querySelector('.sidebar');
+    const mobileOverlay = document.getElementById('mobile-overlay');
+    const addHabitBtn = document.getElementById('addHabitBtn');
+    const addHabitModal = document.getElementById('addHabitModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const habitForm = document.getElementById('habitForm');
+    const habitsList = document.getElementById('habitsList');
+    const noHabitsMessage = document.getElementById('noHabitsMessage');
+
+    // Stat Display Elements
+    const sidebarStreakEl = document.getElementById('sidebarStreak');
+    const sidebarPointsEl = document.getElementById('sidebarPoints');
+    const sidebarLevelEl = document.getElementById('sidebarLevel');
+    const sidebarXPEl = document.getElementById('sidebarXP');
+    const sidebarLevelFillEl = document.getElementById('sidebarLevelFill');
+    const mainStreakCountEl = document.getElementById('mainStreakCount');
+    const streakEncouragementEl = document.getElementById('streakEncouragement');
+    const streakDatesContainer = document.getElementById('streakDatesContainer');
+    const mainPointsCountEl = document.getElementById('mainPointsCount');
+    const pointsStatusEl = document.getElementById('pointsStatus');
+    const pointsGoalEl = document.getElementById('pointsGoal');
+    const welcomeNameEl = document.getElementById('welcomeName');
+    const welcomeMessageEl = document.getElementById('welcomeMessage');
+    const progressCompletionEl = document.getElementById('progressCompletion');
+    const progressCompletionFillEl = document.getElementById('progressCompletionFill');
+    const progressPointsEl = document.getElementById('progressPoints');
+    const progressPointsFillEl = document.getElementById('progressPointsFill');
+    const badgesGridEl = document.getElementById('badgesGrid');
+
+    // Calendar Elements
+    const calendarMonthYearEl = document.getElementById('calendarMonthYear');
+    const calendarGridEl = document.getElementById('calendarGrid');
+    const prevMonthBtn = document.querySelector('.prev-month');
+    const nextMonthBtn = document.querySelector('.next-month');
+
+    // --- State Variables (Simulated - Lost on Refresh) ---
+    let userName = "John"; // Example user name
+    let userInitials = "JS";
+    let habits = [
+        // Example initial habits (will be rendered on load)
+        { id: 1, name: "Morning Meditation", category: "mindfulness", points: 10, frequency: "daily", streak: 7, completedToday: false, lastCompleted: '2023-10-22' },
+        { id: 2, name: "Drink 8 Glasses of Water", category: "health", points: 15, frequency: "daily", streak: 14, completedToday: true, lastCompleted: '2023-10-23' }, // Example completed
+        { id: 3, name: "30 Min Exercise", category: "fitness", points: 20, frequency: "daily", streak: 5, completedToday: false, lastCompleted: '2023-10-22' },
+        { id: 4, name: "Read 10 Pages", category: "learning", points: 10, frequency: "daily", streak: 3, completedToday: false, lastCompleted: '2023-10-22' },
+    ];
+    let userStats = {
+        points: 1250,
+        currentStreak: 14, // Overall streak, needs proper date logic for real app
+        level: 5,
+        xp: 150, // Current XP within the level
+        xpToNextLevel: 400 // XP needed to reach level 6
+    };
+    let calendarData = { // Basic simulation of activity
+       '2023-10-01': 'high', '2023-10-02': 'high', '2023-10-03': 'medium',
+       '2023-10-04': 'high', '2023-10-05': 'low', '2023-10-07': 'high',
+       '2023-10-15': 'high', '2023-10-16': 'high', '2023-10-17': 'high',
+       '2023-10-18': 'medium', '2023-10-19': 'high', '2023-10-20': 'high',
+       '2023-10-21': 'low',
+    };
+    let currentCalendarDate = new Date(); // Date for calendar display
+    let weeklyPointsGoal = 500; // Example goal
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeTheme();
+        initializeUser();
+        renderHabits();
+        updateAllStats();
+        renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
+        updateBadges();
+        updateStreakBubbles(); // Initial streak bubble render
+    });
+
+    // --- Theme Toggle ---
+    function initializeTheme() {
+        // Basic check, could be enhanced with localStorage
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+             body.classList.remove('light-mode');
+        } else {
+             body.classList.add('light-mode'); // Default to light if no preference or light detected
+        }
+        updateThemeIcon(); // Set initial icon
+    }
+
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light-mode');
+      updateThemeIcon();
+      // Consider saving preference to localStorage here
+    });
+
+    function updateThemeIcon() {
+      const icon = themeToggle.querySelector('i');
+      if (body.classList.contains('light-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+    }
+
+    // --- User Initialization ---
+    function initializeUser() {
+      // Get username from localStorage
+      const storedUser = localStorage.getItem('evolveAIUser');
+      let userName = "User"; // Default
+      let userInitials = "U";
+      
+      if (storedUser) {
+          try {
+              const userData = JSON.parse(storedUser);
+              userName = userData.name || userName;
+              userInitials = userData.initials || userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+          } catch (e) {
+              console.error("Error parsing user data:", e);
+          }
+      }
+      
+      welcomeNameEl.textContent = `Welcome back, ${userName}!`;
+      document.querySelector('.user-avatar').textContent = userInitials;
+      
+      // Show greeting on wider screens
+      if (window.innerWidth > 600) {
+          const greetingEl = document.getElementById('userGreeting');
+          greetingEl.style.display = 'inline';
+          greetingEl.textContent = `Hi, ${userName}`;
+      }
+    }
+
+    // --- Mobile Sidebar ---
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.add('mobile-visible');
+      mobileOverlay.style.display = 'block'; // Show overlay
+      setTimeout(() => mobileOverlay.style.opacity = '1', 10); // Fade in overlay
+    });
+
+    closeSidebarBtn.addEventListener('click', closeMobileSidebar);
+    mobileOverlay.addEventListener('click', closeMobileSidebar);
+
+    function closeMobileSidebar() {
+      sidebar.classList.remove('mobile-visible');
+      mobileOverlay.style.opacity = '0'; // Fade out overlay
+       setTimeout(() => mobileOverlay.style.display = 'none', 300); // Hide after transition
+    }
+
+    // Adjust sidebar visibility on resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 992) {
+            closeMobileSidebar(); // Ensure closed if screen becomes large
+             document.getElementById('userGreeting').style.display = 'inline'; // Show greeting
+        } else {
+             document.getElementById('userGreeting').style.display = 'none'; // Hide greeting
+        }
+    });
+
+
+    // --- Habit Management ---
+
+    function renderHabit(habit) {
+        const li = document.createElement('li');
+        li.className = 'habit-item';
+        li.dataset.habitId = habit.id; // Store ID on the element
+
+        li.innerHTML = `
+          <div class="habit-check">
+            <input type="checkbox" class="habit-checkbox" id="habit-${habit.id}" ${habit.completedToday ? 'checked' : ''}>
+          </div>
+          <div class="habit-info">
+            <div class="habit-name">${habit.name}</div>
+            <div class="habit-streak">
+              <i class="fas ${habit.streak > 0 ? 'fa-bolt' : 'fa-minus'}"></i> <!-- Show bolt only if streak > 0 -->
+              <span class="streak-text">${habit.streak > 0 ? `${habit.streak} day streak` : 'No streak'}</span>
+            </div>
+          </div>
+          <div class="habit-points">+${habit.points}</div>
+        `;
+
+        const checkbox = li.querySelector('.habit-checkbox');
+        checkbox.addEventListener('change', handleHabitCheck);
+
+        return li;
+    }
+
+    function renderHabits() {
+        habitsList.innerHTML = ''; // Clear existing list
+        if (habits.length === 0) {
+             noHabitsMessage.style.display = 'block';
+        } else {
+            noHabitsMessage.style.display = 'none';
+            habits.forEach(habit => {
+                habitsList.appendChild(renderHabit(habit));
+            });
+        }
+        updateCompletionProgress(); // Update progress after rendering
+    }
+
+    function handleHabitCheck(e) {
+// (Continuing the <script> block from the previous HTML)
+
+    const checkbox = e.target;
+        const habitItem = checkbox.closest('.habit-item');
+        const habitId = parseInt(habitItem.dataset.habitId);
+        const habit = habits.find(h => h.id === habitId);
+
+        if (!habit) return; // Safety check
+
+        habit.completedToday = checkbox.checked;
+        const pointsChange = habit.points * (checkbox.checked ? 1 : -1);
+        const xpChange = Math.round(habit.points * 0.5) * (checkbox.checked ? 1 : -1); // XP is half points (example)
+
+        // Update Points & XP
+        userStats.points += pointsChange;
+        userStats.xp += xpChange;
+
+        // --- Simple Streak Logic (Demo - Doesn't handle skipped days accurately) ---
+        // For a real app, compare lastCompleted date with yesterday/today
+        if (checkbox.checked) {
+            habit.streak = (habit.streak || 0) + 1; // Increment individual habit streak
+             habit.lastCompleted = getTodayDateString(); // Mark completion date
+             // Add visual feedback
+            habitItem.classList.add('completed-visual-feedback');
+            setTimeout(() => {
+                 habitItem.classList.remove('completed-visual-feedback');
+            }, 500);
+        } else {
+            // Resetting streak immediately on uncheck might be harsh.
+            // A real app might only reset if a day is missed.
+            // For this demo, let's just decrement (or keep it simple and don't change streak on uncheck)
+            // habit.streak = Math.max(0, (habit.streak || 0) - 1);
+            // Let's not decrement streak on uncheck for simpler demo
+        }
+        // --- End Simple Streak Logic ---
+
+        updateHabitStreakDisplay(habitId, habit.streak); // Update only the streak text in the list
+        updateLevel(); // Check for level up *before* updating all stats display
+        updateAllStats(); // Update all displayed stats
+        updateBadges(); // Check if any badges were unlocked/locked
+        updateCompletionProgress(); // Update completion progress bar
+        // Optional: Add today's activity to calendarData simulation
+        // calendarData[getTodayDateString()] = calculateDailyActivityLevel();
+        // renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
+    }
+
+    function updateHabitStreakDisplay(habitId, streak) {
+        const habitItem = habitsList.querySelector(`.habit-item[data-habit-id="${habitId}"]`);
+        if (habitItem) {
+            const streakTextEl = habitItem.querySelector('.streak-text');
+            const streakIconEl = habitItem.querySelector('.habit-streak i');
+            if (streak > 0) {
+                streakTextEl.textContent = `${streak} day streak`;
+                streakIconEl.className = 'fas fa-bolt'; // Ensure bolt icon
+            } else {
+                streakTextEl.textContent = 'No streak';
+                 streakIconEl.className = 'fas fa-minus'; // Show minus icon
+            }
+        }
+    }
+
+
+    // --- Add Habit Modal & Form ---
+    addHabitBtn.addEventListener('click', () => {
+        habitForm.reset(); // Clear form before showing
+        addHabitModal.classList.add('show');
+        document.getElementById('habitName').focus(); // Focus first input
+    });
+
+    closeModalBtn.addEventListener('click', closeAddHabitModal);
+    addHabitModal.addEventListener('click', (e) => { // Close on overlay click
+      if (e.target === addHabitModal) {
+        closeAddHabitModal();
+      }
+    });
+
+    function closeAddHabitModal() {
+        addHabitModal.classList.remove('show');
+    }
+
+    habitForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const nameInput = document.getElementById('habitName');
+      const name = nameInput.value.trim();
+      const category = document.getElementById('habitCategory').value;
+      const points = parseInt(document.getElementById('habitPoints').value);
+      const frequency = document.getElementById('habitFrequency').value;
+
+      if (!name) {
+          alert("Please enter a habit name."); // Simple validation
+          nameInput.focus();
+          return;
+      }
+
+      const newHabit = {
+        id: Date.now(), // Simple unique ID
+        name: name,
+        category: category,
+        points: points,
+        frequency: frequency, // Currently only 'daily' is fully handled
+        streak: 0,
+        completedToday: false,
+        lastCompleted: null
+      };
+
+      habits.push(newHabit);
+      habitsList.appendChild(renderHabit(newHabit)); // Add directly to list
+
+      // Clear message if it was the first habit
+      if (habits.length === 1) {
+          noHabitsMessage.style.display = 'none';
+      }
+
+      closeAddHabitModal();
+      updateCompletionProgress(); // Recalculate progress
+      // No need to call updateAllStats here unless adding a habit gives points/xp immediately
+       // Save State (Optional but recommended)
+       // saveStateToLocalStorage();
+    });
+
+
+    // --- Stats Update Functions ---
+
+    function updateAllStats() {
+        // Sidebar Stats
+        sidebarStreakEl.textContent = userStats.currentStreak;
+        sidebarPointsEl.textContent = userStats.points.toLocaleString(); // Add commas for readability
+        sidebarLevelEl.textContent = `Level ${userStats.level}`;
+        updateXPDisplay(); // Handles XP text and bar separately
+
+        // Main Content Stats
+        mainStreakCountEl.textContent = userStats.currentStreak;
+        mainPointsCountEl.textContent = userStats.points.toLocaleString();
+
+        // Update Encouragement/Status Texts (Examples)
+        if (userStats.currentStreak === 0) {
+             streakEncouragementEl.textContent = "Start a habit!";
+             welcomeMessageEl.textContent = `Let's build some momentum, ${userName}!`;
+        } else if (userStats.currentStreak < 7) {
+             streakEncouragementEl.textContent = "Keep it going!";
+             welcomeMessageEl.textContent = `You're on a ${userStats.currentStreak}-day streak! Keep it up!`;
+        } else {
+            streakEncouragementEl.textContent = `🔥 ${userStats.currentStreak} days strong!`;
+             welcomeMessageEl.textContent = `Amazing ${userStats.currentStreak}-day streak, ${userName}! You're crushing it!`;
+        }
+
+        pointsStatusEl.textContent = userStats.points > 1000 ? "🏆 Great job!" : "Keep earning!";
+        // Example dynamic goal text
+        const pointsNeeded = 500 - (userStats.points % 500); // Points to next 500 increment
+        pointsGoalEl.textContent = `Earn ${pointsNeeded} more points for the next milestone.`;
+
+        updatePointsProgress(); // Update points progress bar
+        updateStreakBubbles(); // Update the visual streak dates
+
+        // Save State (Optional but recommended)
+        // saveStateToLocalStorage();
+    }
+
+    function updateLevel() {
+        let leveledUp = false;
+        while (userStats.xp >= userStats.xpToNextLevel) {
+            leveledUp = true;
+            userStats.level++;
+            userStats.xp -= userStats.xpToNextLevel;
+            // Increase XP needed for next level (example: 1.5x)
+            userStats.xpToNextLevel = Math.round(userStats.xpToNextLevel * 1.5);
+             // --- Level Up Feedback (Simple Alert) ---
+             // Replace with a more visually appealing notification in a real app
+             alert(`🎉 Level Up! You reached Level ${userStats.level}! 🎉`);
+             // --- End Level Up Feedback ---
+        }
+        // Update XP display only if level up occurred or if called directly after XP change
+        if(leveledUp) {
+            updateXPDisplay();
+            updateBadges(); // Check badges after level up
+        }
+    }
+
+    function updateXPDisplay() {
+         const percentage = Math.max(0, Math.min(100, (userStats.xp / userStats.xpToNextLevel) * 100));
+         sidebarLevelFillEl.style.width = `${percentage}%`;
+         sidebarXPEl.textContent = `${userStats.xp}/${userStats.xpToNextLevel} XP`;
+    }
+
+    function updateCompletionProgress() {
+        const totalHabits = habits.filter(h => h.frequency === 'daily').length; // Only count daily for now
+        if (totalHabits === 0) {
+            progressCompletionEl.textContent = '0%';
+            progressCompletionFillEl.style.width = '0%';
+            return;
+        }
+        const completedHabits = habits.filter(h => h.frequency === 'daily' && h.completedToday).length;
+        const percentage = Math.round((completedHabits / totalHabits) * 100);
+        progressCompletionEl.textContent = `${percentage}%`;
+        progressCompletionFillEl.style.width = `${percentage}%`;
+
+        // Adjust bar color based on completion (example)
+        if(percentage < 30) progressCompletionFillEl.className = 'progress-fill danger';
+        else if (percentage < 70) progressCompletionFillEl.className = 'progress-fill warning';
+        else if (percentage < 100) progressCompletionFillEl.className = 'progress-fill success';
+        else progressCompletionFillEl.className = 'progress-fill'; // Default gradient for 100%
+
+        // Potentially update overall streak (Simplified for demo)
+        // This needs proper date checking in a real app
+        const allDailyCompleted = totalHabits > 0 && completedHabits === totalHabits;
+        // Example: If all are done today, maybe increment overall streak (needs better logic)
+        // if(allDailyCompleted) { userStats.currentStreak += 1; } // Very basic demo logic
+    }
+
+     function updatePointsProgress() {
+         if (weeklyPointsGoal <= 0) {
+             progressPointsEl.textContent = 'N/A';
+             progressPointsFillEl.style.width = '0%';
+             return;
+         }
+         // For demo, let's just use total points vs an arbitrary goal
+         const percentage = Math.min(100, Math.round((userStats.points / weeklyPointsGoal) * 100));
+         progressPointsEl.textContent = `${percentage}%`;
+         progressPointsFillEl.style.width = `${percentage}%`;
+     }
+
+     function updateStreakBubbles() {
+        streakDatesContainer.innerHTML = ''; // Clear existing bubbles
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Start Sunday
+
+        for (let i = 0; i < 7; i++) {
+            const bubble = document.createElement('div');
+            bubble.classList.add('date-bubble');
+            bubble.textContent = days[i]; // Use S M T W T F S
+
+            const dayIndexInStreak = dayOfWeek - i; // How many days ago? (0=today, 1=yesterday...)
+
+            if (i === dayOfWeek) {
+                bubble.classList.add('today');
+                 // Check if *any* habit was completed today to mark today's bubble
+                 if (habits.some(h => h.completedToday)) {
+                      bubble.classList.add('completed');
+                 }
+
+            } else if (dayIndexInStreak > 0 && dayIndexInStreak <= userStats.currentStreak) {
+                // If the day was within the current streak range (and not today)
+                bubble.classList.add('completed');
+            }
+
+            // Prepend bubbles so Sunday is last visually, matching the original static HTML order
+             streakDatesContainer.prepend(bubble);
+        }
+    }
+
+    // --- Badge Updates ---
+    function updateBadges() {
+        const badges = badgesGridEl.querySelectorAll('.badge-item');
+        badges.forEach(badge => {
+            const badgeType = badge.dataset.badge;
+            let unlocked = false;
+
+            // Define badge unlocking conditions
+            switch(badgeType) {
+                case 'streak-7':
+                    unlocked = userStats.currentStreak >= 7;
+                    break;
+                case 'streak-30':
+                    unlocked = userStats.currentStreak >= 30;
+                    break;
+                 case 'legendary-streak':
+                     unlocked = userStats.currentStreak >= 90;
+                     break;
+                case 'points-500':
+                    unlocked = userStats.points >= 500;
+                    break;
+                case 'habit-master': // Example: 2000 points
+                    unlocked = userStats.points >= 2000;
+                    break;
+                case 'perfect-week':
+                    // This requires more complex tracking (e.g., storing daily completion history)
+                    // Simple simulation: Check if current streak is >= 7 (not accurate)
+                    unlocked = userStats.currentStreak >= 7;
+                    break;
+                // Add more badge conditions here
+            }
+
+            if (unlocked) {
+                // Check if it *wasn't* unlocked before to show feedback
+                if (!badge.classList.contains('unlocked')) {
+                     badge.classList.add('unlocked');
+                     // Add feedback for newly unlocked badge (e.g., animation, notification)
+                     console.log(`Badge Unlocked: ${badge.querySelector('.badge-name').textContent}`);
+                }
+            } else {
+                badge.classList.remove('unlocked');
+            }
+        });
+    }
+
+    // --- Calendar ---
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    function renderCalendar(year, month) { // month is 0-indexed
+        calendarMonthYearEl.textContent = `${monthNames[month]} ${year}`;
+        // Clear previous days, keep weekdays
+        const weekdays = calendarGridEl.querySelectorAll('.calendar-weekday');
+        calendarGridEl.innerHTML = '';
+        weekdays.forEach(wd => calendarGridEl.appendChild(wd));
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDayWeekday = firstDayOfMonth.getDay(); // 0=Sun, 1=Mon...
+
+        const today = new Date();
+        const todayDateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        // --- Previous Month Padding ---
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+        for (let i = 0; i < firstDayWeekday; i++) {
+             const day = daysInPrevMonth - firstDayWeekday + 1 + i;
+             const dayEl = createCalendarDay(day, true); // true = other month
+             calendarGridEl.appendChild(dayEl);
+        }
+
+        // --- Current Month Days ---
+        for (let day = 1; day <= daysInMonth; day++) {
+             const dayEl = createCalendarDay(day, false); // false = current month
+             const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+             if (currentDateString === todayDateString) {
+                 dayEl.classList.add('today');
+             }
+
+             // Add activity indicator based on simulated data
+             const activityLevel = calendarData[currentDateString];
+             if (activityLevel) {
+                 dayEl.classList.add('has-activity'); // Add the dot indicator
+                 // Or add specific class for background color indicator:
+                 // dayEl.classList.add(`${activityLevel}-activity`);
+             }
+
+             calendarGridEl.appendChild(dayEl);
+        }
+
+         // --- Next Month Padding ---
+         const totalCells = firstDayWeekday + daysInMonth;
+         const nextMonthPadding = (7 - (totalCells % 7)) % 7;
+         for (let i = 1; i <= nextMonthPadding; i++) {
+             const dayEl = createCalendarDay(i, true); // true = other month
+             calendarGridEl.appendChild(dayEl);
+         }
+    }
+
+    function createCalendarDay(day, isOtherMonth) {
+        const dayEl = document.createElement('div');
+        dayEl.classList.add('calendar-day');
+        if (isOtherMonth) {
+            dayEl.classList.add('other-month');
+        }
+        dayEl.innerHTML = `<span class="calendar-date">${day}</span>`;
+        // Potentially add activity indicator div here if not using pseudo-elements
+        return dayEl;
+    }
+
+    prevMonthBtn.addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+        renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+        renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
+    });
+
+     // --- Utility Functions ---
+     function getTodayDateString() {
+         const today = new Date();
+         const year = today.getFullYear();
+         const month = String(today.getMonth() + 1).padStart(2, '0');
+         const day = String(today.getDate()).padStart(2, '0');
+         return `${year}-${month}-${day}`;
+     }
+
+     // --- Persistence (Example using localStorage - Implement if needed) ---
+     /*
+     const STORAGE_KEY = 'evolveAiHabitData';
+
+     function saveStateToLocalStorage() {
+         const state = {
+             habits: habits,
+             userStats: userStats,
+             // Add other relevant state like calendarData if it's dynamic
+         };
+         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+         console.log("State saved.");
+     }
+
+     function loadStateFromLocalStorage() {
+         const savedState = localStorage.getItem(STORAGE_KEY);
+         if (savedState) {
+             try {
+                 const parsedState = JSON.parse(savedState);
+                 habits = parsedState.habits || habits; // Use saved or default
+                 userStats = parsedState.userStats || userStats;
+                 // Restore other state if needed
+                 console.log("State loaded.");
+                 // Crucial: Ensure loaded data reflects reality (e.g., reset completedToday for past days)
+                 resetDailyStatus();
+                 return true; // Indicate state was loaded
+             } catch (error) {
+                 console.error("Error parsing saved state:", error);
+                 localStorage.removeItem(STORAGE_KEY); // Clear corrupted data
+                 return false;
+             }
+         }
+         return false; // No saved state found
+     }
+
+     function resetDailyStatus() {
+         // This function should run on load *after* loading state
+         // It ensures 'completedToday' is false unless the habit was *actually* completed today
+         const todayStr = getTodayDateString();
+         habits.forEach(habit => {
+             if (habit.lastCompleted !== todayStr) {
+                 habit.completedToday = false;
+                 // Optional: Add logic here to check if yesterday was missed to break streaks
+             }
+         });
+     }
+
+     // --- Adjust Initialization to use Local Storage ---
+      document.addEventListener('DOMContentLoaded', () => {
+         const stateLoaded = loadStateFromLocalStorage();
+         initializeTheme();
+         initializeUser(); // Initialize user *after* potential state load
+         renderHabits(); // Render habits *after* potential state load
+         updateAllStats(); // Update stats based on loaded/default state
+         renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
+         updateBadges();
+         updateStreakBubbles();
+      });
+
+     // Call saveStateToLocalStorage() inside functions that modify state:
+     // - handleHabitCheck()
+     // - After adding a new habit in the form submit handler
+     // - Potentially after level ups if xpToNextLevel changes
+     */
+
+
+  </script>
+</body>
+</html>

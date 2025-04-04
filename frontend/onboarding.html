@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EvolveAI - Get to Know You</title>
+  <!-- Load Poppins font and Font Awesome for icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* CSS Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background-color: #000000;
+      color: white;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Main Container */
+    .onboarding-container {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6)), url('background.jpg'); /* Add a subtle gradient overlay */
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* Onboarding Card Styles */
+    .onboarding-card {
+      position: relative;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 40px;
+      width: 90%;
+      max-width: 580px;
+      box-shadow: 0 8px 32px rgba(0, 131, 176, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.5s ease;
+    }
+
+    .onboarding-card.fade-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Header Styles */
+    .onboarding-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .onboarding-logo {
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      font-weight: 700;
+      background: linear-gradient(to bottom, #6a11cb, #2575fc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .onboarding-subtitle {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 0.5rem;
+    }
+
+    /* Progress Bar Styles */
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin: 1.5rem 0 2rem;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #00b4db, #0083b0);
+      border-radius: 10px;
+      transition: width 0.4s ease-in-out;
+    }
+
+    /* Question Section Styles */
+    .question-container {
+      margin-bottom: 2rem;
+    }
+
+    .question {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+
+    .question.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .question-number {
+      color: #00b4db;
+      margin-right: 0.5rem;
+    }
+
+    /* Options Styles */
+    .options-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+      transition-delay: 0.2s;
+    }
+
+    .options-container.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .option-item {
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .option-item:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .option-item.selected {
+      background: rgba(0, 131, 176, 0.2);
+      border-color: rgba(0, 180, 219, 0.5);
+      box-shadow: 0 0 0 1px rgba(0, 180, 219, 0.5);
+    }
+
+    .option-radio {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      margin-right: 12px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .option-item.selected .option-radio {
+      border-color: #00b4db;
+    }
+
+    .option-item.selected .option-radio::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #00b4db;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .option-text {
+      font-size: 1rem;
+    }
+
+    /* Navigation Styles */
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .navigation.active {
+      opacity: 1;
+    }
+
+    .nav-button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 120px;
+    }
+
+    .prev-button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .prev-button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .next-button {
+      position: relative;
+      color: white;
+      background: linear-gradient(to right, #00b4db, #0083b0);
+      border: none;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 131, 176, 0.4);
+    }
+
+    .next-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 131, 176, 0.6);
+    }
+
+    .next-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to right, #0083b0, #00b4db);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .next-button:hover::before {
+      opacity: 1;
+    }
+
+    .next-button span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .nav-button i {
+      margin-right: 8px;
+    }
+
+    .next-button i {
+      margin-left: 8px;
+      margin-right: 0;
+    }
+
+    /* Thank You Screen */
+    .thank-you-screen {
+      text-align: center;
+      display: none;
+    }
+
+    .thank-you-screen.active {
+      display: block;
+    }
+
+    .thank-you-icon {
+      font-size: 4rem;
+      color: #00b4db;
+      margin-bottom: 1.5rem;
+    }
+
+    .thank-you-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .thank-you-message {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 100;
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      opacity: 1;
+    }
+
+    /* Light Mode Styles */
+    .light-mode {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    .light-mode .onboarding-card {
+      background: rgba(255, 255, 255, 0.8);
+      color: #000000;
+    }
+
+    .light-mode .onboarding-subtitle {
+      color: rgba(0, 0, 0, 0.8);
+    }
+
+    .light-mode .progress-container {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .light-mode .option-item {
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .light-mode .option-item:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .light-mode .option-radio {
+      border: 2px solid rgba(0, 0, 0, 0.3);
+    }
+
+    .light-mode .prev-button {
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    .light-mode .prev-button:hover:not(:disabled) {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .light-mode .thank-you-message {
+      color: rgba(0, 0, 0, 0.7);
+    }
+
+    .light-mode .theme-toggle {
+      color: #000000;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .onboarding-card {
+        padding: 30px 20px;
+      }
+      
+      .nav-button {
+        padding: 10px 18px;
+        min-width: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="onboarding-container">
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" aria-label="Toggle theme">
+      ☀️
+    </button>
+    
+    <!-- Onboarding Card -->
+    <div class="onboarding-card">
+      <div class="onboarding-header">
+        <h1 class="onboarding-logo">EvolveAI</h1>
+        <p class="onboarding-subtitle">Let's get to know you better</p>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      
+      <div id="questions-section">
+        <!-- Question 1 -->
+        <div class="question-container" data-question="1">
+          <h2 class="question active"><span class="question-number">1.</span> What area of your life would you like to improve the most?</h2>
+          <div class="options-container active">
+            <div class="option-item" data-value="Physical health">
+              <span class="option-radio"></span>
+              <span class="option-text">Physical health (fitness, diet, sleep)</span>
+            </div>
+            <div class="option-item" data-value="Mental well-being">
+              <span class="option-radio"></span>
+              <span class="option-text">Mental well-being (stress, mindfulness, focus)</span>
+            </div>
+            <div class="option-item" data-value="Productivity">
+              <span class="option-radio"></span>
+              <span class="option-text">Productivity (time management, goals)</span>
+            </div>
+            <div class="option-item" data-value="Relationships">
+              <span class="option-radio"></span>
+              <span class="option-text">Relationships (family, friends, communication)</span>
+            </div>
+            <div class="option-item" data-value="Personal growth">
+              <span class="option-radio"></span>
+              <span class="option-text">Personal growth (learning, hobbies, creativity)</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Question 2 -->
+        <div class="question-container" data-question="2" style="display: none;">
+          <h2 class="question"><span class="question-number">2.</span> How much time can you dedicate daily to building habits?</h2>
+          <div class="options-container">
+            <div class="option-item" data-value="Less than 15 minutes">
+              <span class="option-radio"></span>
+              <span class="option-text">Less than 15 minutes</span>
+            </div>
+            <div class="option-item" data-value="15-30 minutes">
+              <span class="option-radio"></span>
+              <span class="option-text">15-30 minutes</span>
+            </div>
+            <div class="option-item" data-value="30-60 minutes">
+              <span class="option-radio"></span>
+              <span class="option-text">30-60 minutes</span>
+            </div>
+            <div class="option-item" data-value="More than 1 hour">
+              <span class="option-radio"></span>
+              <span class="option-text">More than 1 hour</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Question 3 -->
+        <div class="question-container" data-question="3" style="display: none;">
+          <h2 class="question"><span class="question-number">3.</span> What is your current activity level?</h2>
+          <div class="options-container">
+            <div class="option-item" data-value="Sedentary">
+              <span class="option-radio"></span>
+              <span class="option-text">Sedentary (little to no exercise)</span>
+            </div>
+            <div class="option-item" data-value="Lightly active">
+              <span class="option-radio"></span>
+              <span class="option-text">Lightly active (light exercise 1-3 days/week)</span>
+            </div>
+            <div class="option-item" data-value="Moderately active">
+              <span class="option-radio"></span>
+              <span class="option-text">Moderately active (moderate exercise 3-5 days/week)</span>
+            </div>
+            <div class="option-item" data-value="Very active">
+              <span class="option-radio"></span>
+              <span class="option-text">Very active (intense exercise 6-7 days/week)</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Question 4 -->
+        <div class="question-container" data-question="4" style="display: none;">
+          <h2 class="question"><span class="question-number">4.</span> How do you prefer to track your progress?</h2>
+          <div class="options-container">
+            <div class="option-item" data-value="Journaling">
+              <span class="option-radio"></span>
+              <span class="option-text">Journaling (writing down progress)</span>
+            </div>
+            <div class="option-item" data-value="Mobile apps">
+              <span class="option-radio"></span>
+              <span class="option-text">Mobile apps (habit trackers, reminders)</span>
+            </div>
+            <div class="option-item" data-value="Spreadsheets">
+              <span class="option-radio"></span>
+              <span class="option-text">Spreadsheets (data, charts, analytics)</span>
+            </div>
+            <div class="option-item" data-value="Pen and paper">
+              <span class="option-radio"></span>
+              <span class="option-text">Pen and paper (simple, handwritten notes)</span>
+            </div>
+            <div class="option-item" data-value="Don't track">
+              <span class="option-radio"></span>
+              <span class="option-text">I don't track my progress</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Question 5 -->
+        <div class="question-container" data-question="5" style="display: none;">
+          <h2 class="question"><span class="question-number">5.</span> What motivates you to stick to a habit?</h2>
+          <div class="options-container">
+            <div class="option-item" data-value="Achieving goals">
+              <span class="option-radio"></span>
+              <span class="option-text">Achieving specific goals</span>
+            </div>
+            <div class="option-item" data-value="Personal growth">
+              <span class="option-radio"></span>
+              <span class="option-text">Personal growth and self-improvement</span>
+            </div>
+            <div class="option-item" data-value="Social support">
+              <span class="option-radio"></span>
+              <span class="option-text">Support from friends or family</span>
+            </div>
+            <div class="option-item" data-value="Rewards">
+              <span class="option-radio"></span>
+              <span class="option-text">Rewards or incentives</span>
+            </div>
+            <div class="option-item" data-value="Intrinsic motivation">
+              <span class="option-radio"></span>
+              <span class="option-text">Intrinsic motivation (I enjoy the process)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Thank You Screen -->
+      <div class="thank-you-screen" id="thank-you-screen">
+        <div class="thank-you-icon">
+          <i class="fa-solid fa-check-circle"></i>
+        </div>
+        <h2 class="thank-you-title">Thank You!</h2>
+        <p class="thank-you-message">We're analyzing your answers to create personalized habit suggestions for you.</p>
+        <div id="loading-indicator">
+          <span class="spinner"></span>
+          <p>Building your personalized dashboard...</p>
+        </div>
+      </div>
+      
+      <!-- Navigation Buttons -->
+      <div class="navigation active">
+        <button id="prev-button" class="nav-button prev-button" disabled>
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Previous</span>
+        </button>
+        <button id="next-button" class="nav-button next-button" disabled>
+          <span>Next</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Animate onboarding card with a slight delay
+      setTimeout(() => {
+        const onboardingCard = document.querySelector('.onboarding-card');
+        onboardingCard.classList.add('fade-in');
+      }, 300);
+
+      // Theme toggle functionality
+      const themeToggle = document.querySelector('.theme-toggle');
+      const body = document.body;
+      
+      // Initialize based on system preference or previous setting
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
+        body.classList.add('light-mode');
+        themeToggle.innerHTML = '🌙';
+      } else {
+        themeToggle.innerHTML = '☀️';
+      }
+      
+      themeToggle.addEventListener('click', () => {
+        const isLightMode = body.classList.contains('light-mode');
+        if (isLightMode) {
+          body.classList.remove('light-mode');
+          themeToggle.innerHTML = '☀️';
+          localStorage.setItem('theme', 'dark');
+        } else {
+          body.classList.add('light-mode');
+          themeToggle.innerHTML = '🌙';
+          localStorage.setItem('theme', 'light');
+        }
+      });
+
+      // Onboarding functionality
+      const questions = document.querySelectorAll('.question-container');
+      const prevButton = document.getElementById('prev-button');
+      const nextButton = document.getElementById('next-button');
+      const progressBar = document.getElementById('progress-bar');
+      const thankYouScreen = document.getElementById('thank-you-screen');
+      const totalQuestions = 5;
+      let currentQuestion = 1;
+      let answers = {};
+
+      // Update progress bar
+      const updateProgress = () => {
+  const progressPercentage = ((currentQuestion - 1) / totalQuestions) * 100; // Adjusted formula
+  progressBar.style.width = `${progressPercentage}%`;
+};
+
+// Initialize progress bar to 0% on page load
+updateProgress();
+
+      // Enable or disable next button based on selection
+      const checkSelection = () => {
+        const currentContainer = document.querySelector(`.question-container[data-question="${currentQuestion}"]`);
+        const selected = currentContainer.querySelector('.option-item.selected');
+        nextButton.disabled = !selected;
+      };
+
+      // Show current question
+      const showQuestion = (questionNumber) => {
+        questions.forEach(question => {
+          question.style.display = 'none';
+          const questionEl = question.querySelector('.question');
+          const optionsEl = question.querySelector('.options-container');
+          questionEl.classList.remove('active');
+          optionsEl.classList.remove('active');
+        });
+
+        const currentContainer = document.querySelector(`.question-container[data-question="${questionNumber}"]`);
+        currentContainer.style.display = 'block';
+        
+        // Animate question and options with a slight delay
+        setTimeout(() => {
+          const questionEl = currentContainer.querySelector('.question');
+          questionEl.classList.add('active');
+          
+          setTimeout(() => {
+            const optionsEl = currentContainer.querySelector('.options-container');
+            optionsEl.classList.add('active');
+          }, 200);
+        }, 100);
+
+        // Update button text for last question
+        if (questionNumber === totalQuestions) {
+          nextButton.querySelector('span').textContent = 'Submit';
+        } else {
+          nextButton.querySelector('span').textContent = 'Next';
+        }
+
+        // Update progress bar
+        updateProgress();
+        
+        // Check if we should enable/disable buttons
+        prevButton.disabled = questionNumber === 1;
+        checkSelection();
+      };
+
+      // Handle option selection
+      const handleOptionSelection = (optionsContainer) => {
+        const options = optionsContainer.querySelectorAll('.option-item');
+        
+        options.forEach(option => {
+          option.addEventListener('click', () => {
+            // Remove selected class from all options in this container
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            option.classList.add('selected');
+            
+            // Store the answer
+            const questionNumber = parseInt(optionsContainer.closest('.question-container').getAttribute('data-question'));
+            answers[questionNumber] = option.getAttribute('data-value');
+            
+            // Enable next button
+            nextButton.disabled = false;
+          });
+        });
+      };
+
+      // Initialize option selection for all questions
+      questions.forEach(question => {
+        const optionsContainer = question.querySelector('.options-container');
+        handleOptionSelection(optionsContainer);
+      });
+
+      // Handle next button click
+      nextButton.addEventListener('click', () => {
+        if (currentQuestion < totalQuestions) {
+          currentQuestion++;
+          showQuestion(currentQuestion);
+        } else {
+          // Show thank you screen with loading animation
+          document.getElementById('questions-section').style.display = 'none';
+          document.querySelector('.navigation').style.display = 'none';
+          thankYouScreen.classList.add('active');
+          
+          // Save user preferences to localStorage
+          const userPreferences = {
+            userName: 'User',
+            onboardingAnswers: {
+              improvement_area: answers[1],
+              time_available: answers[2],
+              activity_level: answers[3],
+              tracking_preference: answers[4],
+              motivation_type: answers[5]
+            }
+          };
+          localStorage.setItem('userPreferences', JSON.stringify(userPreferences));
+
+          // Simulate loading and redirect
+          setTimeout(() => {
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+          }, 2000);
+        }
+      });
+
+      // Handle previous button click
+      prevButton.addEventListener('click', () => {
+        if (currentQuestion > 1) {
+          currentQuestion--;
+          showQuestion(currentQuestion);
+        }
+      });
+
+      // Initialize with first question
+      showQuestion(1);
+    });
+  </script>
+</body>
+</html>

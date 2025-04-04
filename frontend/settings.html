@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EvolveAI - Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Reuse the same CSS variables and base styles from dashboard */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    :root {
+      --primary: #00b4db;
+      --primary-dark: #0083b0;
+      --primary-gradient: linear-gradient(to right, #00b4db, #0083b0);
+      --primary-light: rgba(0, 180, 219, 0.2);
+      --primary-lighter: rgba(0, 180, 219, 0.1);
+      --bg-dark: #0a0a0a;
+      --bg-light: #f4f7f6;
+      --text-dark: #1a1a1a;
+      --text-light: #e0e0e0;
+      --gray-dark: rgba(255, 255, 255, 0.6);
+      --gray-light: rgba(0, 0, 0, 0.6);
+      --card-bg-dark: rgba(255, 255, 255, 0.05);
+      --card-bg-light: #ffffff;
+      --card-border-dark: rgba(255, 255, 255, 0.1);
+      --card-border-light: rgba(0, 0, 0, 0.1);
+      --success: #4CAF50;
+      --warning: #FFC107;
+      --danger: #F44336;
+      --neutral: #9E9E9E;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body.light-mode {
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    /* Header Styles (same as dashboard) */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      border-bottom: 1px solid var(--card-border-dark);
+      background-color: rgba(10, 10, 10, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .light-mode .header {
+      background-color: rgba(255, 255, 255, 0.8);
+      border-bottom: 1px solid var(--card-border-light);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+      background: var(--card-bg-dark);
+      border: 1px solid var(--card-border-dark);
+      border-radius: 50%;
+      cursor: pointer;
+      margin-right: 15px;
+      color: var(--text-light);
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .light-mode .back-btn {
+      background: var(--card-bg-light);
+      border: 1px solid var(--card-border-light);
+      color: var(--text-dark);
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.1rem;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.3s ease, color 0.3s ease;
+      padding: 5px;
+    }
+
+    .theme-toggle:hover {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .light-mode .theme-toggle {
+      color: var(--text-dark);
+    }
+
+    /* Main Content */
+    .settings-container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .settings-card {
+      background: var(--card-bg-dark);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid var(--card-border-dark);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .light-mode .settings-card {
+      background: var(--card-bg-light);
+      border: 1px solid var(--card-border-light);
+    }
+
+    .settings-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-title i {
+      color: var(--primary);
+    }
+
+    .settings-group {
+      margin-bottom: 25px;
+    }
+
+    .settings-group-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gray-dark);
+      margin-bottom: 15px;
+    }
+
+    .light-mode .settings-group-title {
+      color: var(--gray-light);
+    }
+
+    .settings-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--card-border-dark);
+    }
+
+    .light-mode .settings-item {
+      border-bottom: 1px solid var(--card-border-light);
+    }
+
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+
+    .settings-label {
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .settings-description {
+      font-size: 0.8rem;
+      color: var(--gray-dark);
+      margin-top: 5px;
+    }
+
+    .light-mode .settings-description {
+      color: var(--gray-light);
+    }
+
+    /* Form elements */
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border-dark);
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 0.95rem;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .light-mode .form-input, .light-mode .form-select {
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--card-border-light);
+      color: var(--text-dark);
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: rgba(0, 180, 219, 0.05);
+    }
+
+    .light-mode .form-input:focus, .light-mode .form-select:focus {
+      background-color: rgba(0, 180, 219, 0.08);
+    }
+
+    /* Toggle switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 131, 176, 0.3);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d32f2f;
+      transform: translateY(-2px);
+    }
+
+    /* Danger zone */
+    .danger-zone {
+      border: 1px solid var(--danger);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+
+    .danger-zone-title {
+      color: var(--danger);
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <button class="back-btn" id="backBtn">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="logo">EvolveAI</div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="settings-container">
+    <div class="settings-card">
+      <h2 class="settings-title"><i class="fas fa-user"></i> Account Settings</h2>
+      
+      <div class="settings-group">
+        <h3 class="settings-group-title">Profile Information</h3>
+        
+        <div class="form-group">
+          <label for="userName" class="settings-label">Name</label>
+          <input type="text" id="userName" class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label for="userEmail" class="settings-label">Email</label>
+          <input type="email" id="userEmail" class="form-input">
+        </div>
+        
+        <button class="btn btn-primary" id="saveProfileBtn">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h2 class="settings-title"><i class="fas fa-bell"></i> Notifications</h2>
+      
+      <div class="settings-group">
+        <h3 class="settings-group-title">Reminders</h3>
+        
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Daily Reminders</div>
+            <div class="settings-description">Get reminders to complete your habits</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="dailyReminders" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Streak Alerts</div>
+            <div class="settings-description">Get notified about your streak progress</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="streakAlerts" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="settings-group">
+        <h3 class="settings-group-title">Email Notifications</h3>
+        
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Weekly Reports</div>
+            <div class="settings-description">Receive a weekly summary of your progress</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="weeklyReports" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h2 class="settings-title"><i class="fas fa-palette"></i> Appearance</h2>
+      
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-label">Dark Mode</div>
+          <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="danger-zone">
+      <h3 class="danger-zone-title"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+      
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Reset All Data</div>
+          <div class="settings-description">Clear all your habits and progress</div>
+        </div>
+        <button class="btn btn-danger" id="resetDataBtn">
+          <i class="fas fa-trash"></i> Reset
+        </button>
+      </div>
+      
+      <div class="settings-item">
+        <div>
+          <div class="settings-label">Delete Account</div>
+          <div class="settings-description">Permanently delete your account and all data</div>
+        </div>
+        <button class="btn btn-danger" id="deleteAccountBtn">
+          <i class="fas fa-user-slash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Initialize theme
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    
+    // Check for saved theme preference or use system preference
+    function initializeTheme() {
+      const savedTheme = localStorage.getItem('evolveAITheme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
+        body.classList.add('light-mode');
+        darkModeToggle.checked = false;
+      } else {
+        darkModeToggle.checked = true;
+      }
+      updateThemeIcon();
+    }
+    
+    function updateThemeIcon() {
+      const icon = themeToggle.querySelector('i');
+      if (body.classList.contains('light-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+      } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+      }
+    }
+    
+    // Theme toggle from header button
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light-mode');
+      localStorage.setItem('evolveAITheme', body.classList.contains('light-mode') ? 'light' : 'dark');
+      updateThemeIcon();
+      darkModeToggle.checked = body.classList.contains('light-mode') ? false : true;
+    });
+    
+    // Theme toggle from settings switch
+    darkModeToggle.addEventListener('change', () => {
+      body.classList.toggle('light-mode', !darkModeToggle.checked);
+      localStorage.setItem('evolveAITheme', darkModeToggle.checked ? 'dark' : 'light');
+      updateThemeIcon();
+    });
+    
+    // Load user data
+    function loadUserData() {
+      const storedUser = localStorage.getItem('evolveAIUser');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          document.getElementById('userName').value = userData.name || '';
+          document.getElementById('userEmail').value = userData.email || '';
+          
+          // Set user avatar initials
+          const nameParts = (userData.name || 'User').split(' ');
+          const initials = nameParts.map(part => part[0]?.toUpperCase() || '').join('').substring(0, 2);
+          document.getElementById('userAvatar').textContent = initials;
+        } catch (e) {
+          console.error("Error parsing user data:", e);
+        }
+      }
+    }
+    
+    // Save user data
+    document.getElementById('saveProfileBtn').addEventListener('click', () => {
+      const userData = {
+        name: document.getElementById('userName').value.trim(),
+        email: document.getElementById('userEmail').value.trim()
+      };
+      
+      if (!userData.name) {
+        alert("Please enter your name");
+        return;
+      }
+      
+      localStorage.setItem('evolveAIUser', JSON.stringify(userData));
+      
+      // Update avatar initials
+      const nameParts = userData.name.split(' ');
+      const initials = nameParts.map(part => part[0]?.toUpperCase() || '').join('').substring(0, 2);
+      document.getElementById('userAvatar').textContent = initials;
+      
+      alert("Profile saved successfully!");
+    });
+    
+    // Back button
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = 'dashboard.html';
+    });
+    
+    // Danger zone buttons
+    document.getElementById('resetDataBtn').addEventListener('click', () => {
+      if (confirm("Are you sure you want to reset all your data? This cannot be undone.")) {
+        // Clear habits and stats (implementation depends on your data structure)
+        localStorage.removeItem('evolveAIHabits');
+        localStorage.removeItem('evolveAIStats');
+        alert("All data has been reset. The page will now reload.");
+        window.location.reload();
+      }
+    });
+    
+    document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+      if (confirm("Are you sure you want to delete your account? ALL your data will be permanently lost.")) {
+        // Clear all user data
+        localStorage.removeItem('evolveAIUser');
+        localStorage.removeItem('evolveAIHabits');
+        localStorage.removeItem('evolveAIStats');
+        localStorage.removeItem('evolveAITheme');
+        alert("Account deleted. Redirecting to login page.");
+        window.location.href = 'auth.html';
+      }
+    });
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeTheme();
+      loadUserData();
+      
+      // Load notification preferences
+      const notifications = JSON.parse(localStorage.getItem('evolveAINotifications') || '{}');
+      document.getElementById('dailyReminders').checked = notifications.dailyReminders !== false;
+      document.getElementById('streakAlerts').checked = notifications.streakAlerts !== false;
+      document.getElementById('weeklyReports').checked = notifications.weeklyReports !== false;
+      
+      // Save notification preferences when changed
+      const notificationToggles = ['dailyReminders', 'streakAlerts', 'weeklyReports'];
+      notificationToggles.forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+          const notifications = {
+            dailyReminders: document.getElementById('dailyReminders').checked,
+            streakAlerts: document.getElementById('streakAlerts').checked,
+            weeklyReports: document.getElementById('weeklyReports').checked
+          };
+          localStorage.setItem('evolveAINotifications', JSON.stringify(notifications));
+        });
+      });
+    });
+  </script>
+</body>
+</html>
