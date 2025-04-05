@@ -1182,7 +1182,163 @@
     .clickable-effect:active {
         transform: scale(0.98);
     }
+    .habit-item {
+        /* position: relative; */ /* Use flex instead */
+        display: flex;
+        align-items: center;
+    }
 
+    .habit-info {
+        margin-right: auto; /* Pushes following elements to the right */
+        padding-right: 10px; /* Add some space before points/delete */
+    }
+
+    .habit-points {
+        margin-left: 10px; /* Space from habit info if margin-right:auto wasn't enough */
+        flex-shrink: 0; /* Prevent shrinking */
+    }
+
+    .habit-delete-btn {
+        background: none;
+        border: none;
+        color: var(--gray-dark);
+        font-size: 0.9rem;
+        cursor: pointer;
+        padding: 5px 8px; /* Easier click target */
+        margin-left: 8px; /* Space between points and delete */
+        opacity: 0.6;
+        transition: opacity 0.2s ease, color 0.2s ease;
+        flex-shrink: 0; /* Prevent shrinking */
+    }
+    .habit-delete-btn:hover {
+        opacity: 1;
+        color: var(--danger);
+    }
+    body.light-mode .habit-delete-btn {
+        color: var(--gray-light);
+    }
+     body.light-mode .habit-delete-btn:hover {
+        color: var(--danger);
+    }
+    /* Make sure icon clicks trigger the button */
+    .habit-delete-btn i {
+        pointer-events: none;
+    }
+
+    /* --- NEW CSS for Selected Calendar Day --- */
+     .calendar-day:not(.other-month) {
+         cursor: pointer; /* Indicate clickable days */
+     }
+     .calendar-day.selected {
+        background-color: var(--primary-light) !important; /* Use !important to override hover potentially */
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 2px var(--primary-lighter); /* Outer glow */
+        /* transform: scale(1.05); */ /* Optional: Slight scale effect */
+    }
+    .calendar-day.selected .calendar-date {
+        font-weight: 700;
+        color: var(--primary);
+    }
+    body.light-mode .calendar-day.selected .calendar-date {
+        color: var(--primary-dark);
+    }
+
+     /* --- NEW CSS for Past Habit Viewing --- */
+    .habit-item.viewing-past {
+        opacity: 0.7; /* Dim slightly */
+    }
+    .habit-item.viewing-past .habit-checkbox {
+        cursor: not-allowed;
+        border-color: var(--card-border-dark); /* Less prominent border */
+    }
+    body.light-mode .habit-item.viewing-past .habit-checkbox {
+         border-color: var(--card-border-light);
+    }
+    /* Style checked state differently when viewing past */
+     .habit-item.viewing-past .habit-checkbox:checked {
+        background-color: var(--gray-dark) !important; /* Use gray */
+        border-color: var(--gray-dark) !important;
+    }
+    body.light-mode .habit-item.viewing-past .habit-checkbox:checked {
+         background-color: var(--gray-light) !important;
+         border-color: var(--gray-light) !important;
+    }
+     /* Adjust checkmark color for contrast */
+    .habit-item.viewing-past .habit-checkbox:checked::after {
+        color: var(--bg-dark) !important; /* Dark check on gray */
+    }
+     body.light-mode .habit-item.viewing-past .habit-checkbox:checked::after {
+        color: var(--bg-light) !important; /* Light check on gray */
+    }
+    calendar-day.selected {
+        background-color: var(--primary-light);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary-lighter); 
+    }
+    .calendar-day.selected .calendar-date {
+        font-weight: 700;
+        color: var(--primary);
+    }
+    body.light-mode .calendar-day.selected .calendar-date {
+        color: var(--primary-dark);
+    }
+    .habit-item.viewing-past .habit-checkbox {
+        cursor: not-allowed;
+        border-color: var(--card-border-dark); 
+    }
+    body.light-mode .habit-item.viewing-past .habit-checkbox {
+         border-color: var(--card-border-light);
+    }
+     .habit-item.viewing-past .habit-checkbox:checked {
+        background-color: var(--gray-dark); 
+        border-color: var(--gray-dark);
+    }
+    body.light-mode .habit-item.viewing-past .habit-checkbox:checked {
+         background-color: var(--gray-light);
+         border-color: var(--gray-light);
+    }
+    .habit-item.viewing-past .habit-checkbox:checked::after {
+        color: var(--bg-dark); 
+    }
+     body.light-mode .habit-item.viewing-past .habit-checkbox:checked::after {
+        color: var(--bg-light); 
+    }
+    .habit-item {
+        position: relative; 
+        display: flex; 
+        align-items: center;
+    }
+
+    .habit-info {
+        margin-right: auto; 
+    }
+
+    .habit-points {
+        margin-left: 10px; 
+    }
+
+    .habit-delete-btn {
+        background: none;
+        border: none;
+        color: var(--gray-dark);
+        font-size: 0.9rem;
+        cursor: pointer;
+        padding: 5px 8px; 
+        margin-left: 8px; 
+        opacity: 0.6;
+        transition: opacity 0.2s ease, color 0.2s ease;
+    }
+    .habit-delete-btn:hover {
+        opacity: 1;
+        color: var(--danger);
+    }
+    body.light-mode .habit-delete-btn {
+        color: var(--gray-light);
+    }
+     body.light-mode .habit-delete-btn:hover {
+        color: var(--danger);
+    }
+    .habit-delete-btn i { pointer-events: none; } 
   </style>
 </head>
 <body>
@@ -1473,12 +1629,14 @@
     const closeSidebarBtn = document.querySelector('.close-sidebar');
     const sidebar = document.querySelector('.sidebar');
     const mobileOverlay = document.getElementById('mobile-overlay');
+
     const addHabitBtn = document.getElementById('addHabitBtn');
     const addHabitModal = document.getElementById('addHabitModal');
     const closeModalBtn = document.getElementById('closeModal');
     const habitForm = document.getElementById('habitForm');
     const habitsList = document.getElementById('habitsList');
     const noHabitsMessage = document.getElementById('noHabitsMessage');
+    const habitsCardTitle = document.querySelector('.habits-card .habits-title'); // Get habits card title element
 
     // Stat Display Elements
     const sidebarStreakEl = document.getElementById('sidebarStreak');
@@ -1506,60 +1664,124 @@
     const prevMonthBtn = document.querySelector('.prev-month');
     const nextMonthBtn = document.querySelector('.next-month');
 
-    // --- State Variables (Simulated - Lost on Refresh) ---
-    let userName = "John"; // Example user name
-    let userInitials = "JS";
+    // --- State Variables ---
+    let userName = "User"; // Will be updated by initializeUser
+    let userInitials = "U";
     let habits = [
-        // Example initial habits (will be rendered on load)
-        { id: 1, name: "Morning Meditation", category: "mindfulness", points: 10, frequency: "daily", streak: 7, completedToday: false, lastCompleted: '2023-10-22' },
-        { id: 2, name: "Drink 8 Glasses of Water", category: "health", points: 15, frequency: "daily", streak: 14, completedToday: true, lastCompleted: '2023-10-23' }, // Example completed
-        { id: 3, name: "30 Min Exercise", category: "fitness", points: 20, frequency: "daily", streak: 5, completedToday: false, lastCompleted: '2023-10-22' },
-        { id: 4, name: "Read 10 Pages", category: "learning", points: 10, frequency: "daily", streak: 3, completedToday: false, lastCompleted: '2023-10-22' },
+        // Example initial habits (will be replaced if localStorage is used)
+        { id: 1, name: "Morning Meditation", category: "mindfulness", points: 10, frequency: "daily", streak: 7, completedToday: false, lastCompleted: null },
+        { id: 2, name: "Drink 8 Glasses of Water", category: "health", points: 15, frequency: "daily", streak: 14, completedToday: false, lastCompleted: null },
+        { id: 3, name: "30 Min Exercise", category: "fitness", points: 20, frequency: "daily", streak: 5, completedToday: false, lastCompleted: null },
+        { id: 4, name: "Read 10 Pages", category: "learning", points: 10, frequency: "daily", streak: 3, completedToday: false, lastCompleted: null },
     ];
     let userStats = {
-        points: 1250,
-        currentStreak: 14, // Overall streak, needs proper date logic for real app
-        level: 5,
-        xp: 150, // Current XP within the level
-        xpToNextLevel: 400 // XP needed to reach level 6
+        points: 0,
+        currentStreak: 0,
+        level: 1,
+        xp: 0,
+        xpToNextLevel: 100 // Initial XP needed for Level 2
     };
-    let calendarData = { // Basic simulation of activity
-       '2023-10-01': 'high', '2023-10-02': 'high', '2023-10-03': 'medium',
-       '2023-10-04': 'high', '2023-10-05': 'low', '2023-10-07': 'high',
-       '2023-10-15': 'high', '2023-10-16': 'high', '2023-10-17': 'high',
-       '2023-10-18': 'medium', '2023-10-19': 'high', '2023-10-20': 'high',
-       '2023-10-21': 'low',
+    let calendarData = { // Basic simulation - In real app, derive from habit history
+       // Example: 'YYYY-MM-DD': 'activity-level' (e.g., 'high', 'medium', 'low')
     };
     let currentCalendarDate = new Date(); // Date for calendar display
     let weeklyPointsGoal = 500; // Example goal
 
+    // State for Calendar Viewing
+    let viewingDate = getTodayDateString(); // Initially viewing today
+
+    // --- Constants ---
+    const STORAGE_KEY = 'evolveAiHabitData_v2'; // Local storage key
+
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
+        loadStateFromLocalStorage(); // Load state first
         initializeTheme();
-        initializeUser();
-        renderHabits();
-        updateAllStats();
+        initializeUser(); // Initialize user info *after* loading potential saved name
+        // resetDailyStatusIfNeeded(); // Called within loadState now
+        renderHabits(); // Render based on loaded/default state
+        updateAllStats(); // Update UI based on loaded/default state
         renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
         updateBadges();
-        updateStreakBubbles(); // Initial streak bubble render
+        updateStreakBubbles();
+        updateHabitViewForDate(viewingDate); // Set initial habit view state
+        updateCalendarActivityData(); // Populate calendar dots based on current state
     });
+
+    // --- Local Storage Persistence ---
+     function saveStateToLocalStorage() {
+         const state = {
+             habits: habits,
+             userStats: userStats,
+             userName: userName,
+             userInitials: userInitials,
+             // DO NOT save viewingDate - it's transient UI state
+             // DO NOT save calendarData unless it holds historical data independent of habits
+         };
+         try {
+             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+             // console.log("State saved.");
+         } catch (error) {
+              console.error("Error saving state to localStorage:", error);
+              // Handle potential storage full errors
+              alert("Could not save progress. Local storage might be full.");
+         }
+     }
+
+     function loadStateFromLocalStorage() {
+         const savedState = localStorage.getItem(STORAGE_KEY);
+         if (savedState) {
+             try {
+                 const parsedState = JSON.parse(savedState);
+                 // Validate loaded data before assigning
+                 habits = Array.isArray(parsedState.habits) ? parsedState.habits : habits;
+                 userStats = (typeof parsedState.userStats === 'object' && parsedState.userStats !== null) ? parsedState.userStats : userStats;
+                 userName = typeof parsedState.userName === 'string' ? parsedState.userName : userName;
+                 userInitials = typeof parsedState.userInitials === 'string' ? parsedState.userInitials : userInitials;
+
+                 // Ensure essential properties exist in loaded userStats
+                 userStats.points = userStats.points || 0;
+                 userStats.currentStreak = userStats.currentStreak || 0;
+                 userStats.level = userStats.level || 1;
+                 userStats.xp = userStats.xp || 0;
+                 userStats.xpToNextLevel = userStats.xpToNextLevel || 100;
+
+                 console.log("State loaded.");
+                 // IMPORTANT: Reset daily status after loading potentially old data
+                 resetDailyStatusIfNeeded();
+                 // Recalculate overall streak based on loaded data (more robust)
+                 recalculateOverallStreak(); // Add this function call
+                 return true;
+             } catch (error) {
+                 console.error("Error parsing saved state:", error);
+                 localStorage.removeItem(STORAGE_KEY); // Clear corrupted data
+                 return false;
+             }
+         }
+         return false; // No saved state found
+     }
+
 
     // --- Theme Toggle ---
     function initializeTheme() {
-        // Basic check, could be enhanced with localStorage
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) {
-             body.classList.remove('light-mode');
+        const storedTheme = localStorage.getItem('evolveAITheme'); // Separate key for theme
+        if (storedTheme === 'light') {
+             body.classList.add('light-mode');
+        } else if (storedTheme === 'dark') {
+            body.classList.remove('light-mode');
         } else {
-             body.classList.add('light-mode'); // Default to light if no preference or light detected
+             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+             if (!prefersDark) {
+                 body.classList.add('light-mode'); // Default to light
+             }
         }
-        updateThemeIcon(); // Set initial icon
+        updateThemeIcon();
     }
 
     themeToggle.addEventListener('click', () => {
       body.classList.toggle('light-mode');
+      localStorage.setItem('evolveAITheme', body.classList.contains('light-mode') ? 'light' : 'dark');
       updateThemeIcon();
-      // Consider saving preference to localStorage here
     });
 
     function updateThemeIcon() {
@@ -1575,37 +1797,35 @@
 
     // --- User Initialization ---
     function initializeUser() {
-      // Get username from localStorage
-      const storedUser = localStorage.getItem('evolveAIUser');
-      let userName = "User"; // Default
-      let userInitials = "U";
-      
-      if (storedUser) {
-          try {
-              const userData = JSON.parse(storedUser);
-              userName = userData.name || userName;
-              userInitials = userData.initials || userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-          } catch (e) {
-              console.error("Error parsing user data:", e);
-          }
-      }
-      
+      // userName and userInitials are now loaded from localStorage if available
       welcomeNameEl.textContent = `Welcome back, ${userName}!`;
       document.querySelector('.user-avatar').textContent = userInitials;
-      
-      // Show greeting on wider screens
+
       if (window.innerWidth > 600) {
           const greetingEl = document.getElementById('userGreeting');
           greetingEl.style.display = 'inline';
           greetingEl.textContent = `Hi, ${userName}`;
+      } else {
+           document.getElementById('userGreeting').style.display = 'none';
       }
+       // Example: Prompt for name if it's the default "User"
+       if (userName === "User" && localStorage.getItem(STORAGE_KEY)) { // Only prompt if state exists but name is default
+           // Optional: Implement a more user-friendly way to set the name, maybe in settings
+           // const newName = prompt("Enter your name:", "User");
+           // if (newName && newName.trim() !== "") {
+           //     userName = newName.trim();
+           //     userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+           //     initializeUser(); // Re-run to update display
+           //     saveStateToLocalStorage(); // Save the new name
+           // }
+       }
     }
 
     // --- Mobile Sidebar ---
     mobileMenuBtn.addEventListener('click', () => {
       sidebar.classList.add('mobile-visible');
-      mobileOverlay.style.display = 'block'; // Show overlay
-      setTimeout(() => mobileOverlay.style.opacity = '1', 10); // Fade in overlay
+      mobileOverlay.style.display = 'block';
+      setTimeout(() => mobileOverlay.style.opacity = '1', 10);
     });
 
     closeSidebarBtn.addEventListener('click', closeMobileSidebar);
@@ -1613,27 +1833,126 @@
 
     function closeMobileSidebar() {
       sidebar.classList.remove('mobile-visible');
-      mobileOverlay.style.opacity = '0'; // Fade out overlay
-       setTimeout(() => mobileOverlay.style.display = 'none', 300); // Hide after transition
+      mobileOverlay.style.opacity = '0';
+      setTimeout(() => mobileOverlay.style.display = 'none', 300);
     }
 
-    // Adjust sidebar visibility on resize
     window.addEventListener('resize', () => {
         if (window.innerWidth > 992) {
-            closeMobileSidebar(); // Ensure closed if screen becomes large
-             document.getElementById('userGreeting').style.display = 'inline'; // Show greeting
+            closeMobileSidebar();
+             document.getElementById('userGreeting').style.display = 'inline';
         } else {
-             document.getElementById('userGreeting').style.display = 'none'; // Hide greeting
+             document.getElementById('userGreeting').style.display = 'none';
         }
     });
 
 
     // --- Habit Management ---
 
+    // Reset completion status if the stored data is from a previous day
+    function resetDailyStatusIfNeeded() {
+        const todayStr = getTodayDateString();
+        let stateChanged = false;
+        habits.forEach(habit => {
+            // If the habit was marked completed, but the last completed date is not today, reset it
+            if (habit.completedToday && habit.lastCompleted !== todayStr) {
+                habit.completedToday = false;
+                 // Don't automatically reset streak here; handle streak logic separately based on missed days.
+                stateChanged = true;
+            }
+            // Ensure lastCompleted is not in the future (data correction)
+             if (habit.lastCompleted && habit.lastCompleted > todayStr) {
+                 habit.lastCompleted = null;
+                 habit.completedToday = false; // Ensure it's not marked completed
+                 stateChanged = true;
+             }
+        });
+         if (stateChanged) {
+              console.log("Resetting daily completion status for outdated entries.");
+             // Save the corrected state immediately if changes were made
+             saveStateToLocalStorage();
+         }
+    }
+
+    // --- Streak Calculation (More Robust) ---
+    function recalculateOverallStreak() {
+         // This function should determine the *actual* current overall streak
+         // based on the completion history of *all* daily habits.
+         // Requires tracking historical completion data per day.
+
+         // --- Simplified Placeholder Logic ---
+         // For this demo, we'll base the overall streak on the highest
+         // *individual* habit streak IF that habit was completed yesterday or today.
+         // This is NOT a true overall streak but a simpler approximation.
+         let maxStreak = 0;
+         const todayStr = getTodayDateString();
+         const yesterdayStr = getYesterdayDateString();
+
+         habits.forEach(habit => {
+             if (habit.frequency === 'daily') {
+                 // If the habit has a streak AND was completed today or yesterday, consider it current
+                 if (habit.streak > 0 && (habit.lastCompleted === todayStr || habit.lastCompleted === yesterdayStr)) {
+                     if (habit.streak > maxStreak) {
+                         maxStreak = habit.streak;
+                     }
+                 }
+                 // If a daily habit was *not* completed yesterday or today, its streak should be 0 (or reset based on last completed)
+                 else if (habit.lastCompleted !== todayStr && habit.lastCompleted !== yesterdayStr) {
+                     // This logic should ideally be in a daily update function
+                     // habit.streak = 0; // Resetting here might be too aggressive during load
+                 }
+             }
+         });
+         userStats.currentStreak = maxStreak; // Update the global streak stat
+         // --- End Simplified Placeholder ---
+    }
+
+    // --- Daily Update Function (Conceptual) ---
+    function performDailyUpdate() {
+        // This function should run ideally once per day (e.g., on first load after midnight)
+        console.log("Performing daily update check...");
+        const todayStr = getTodayDateString();
+        const yesterdayStr = getYesterdayDateString();
+        let needsSave = false;
+
+        habits.forEach(habit => {
+             if (habit.frequency === 'daily') {
+                 // Check if yesterday was missed
+                 if (habit.lastCompleted !== todayStr && habit.lastCompleted !== yesterdayStr) {
+                      if (habit.streak > 0) {
+                         console.log(`Streak broken for habit: ${habit.name}`);
+                         habit.streak = 0; // Reset individual streak
+                         needsSave = true;
+                      }
+                 }
+                 // Reset completedToday flag for the new day (already handled by resetDailyStatusIfNeeded)
+                 // if (habit.completedToday) {
+                 //     habit.completedToday = false;
+                 //     needsSave = true;
+                 // }
+             }
+             // Add logic for weekly habits, etc.
+        });
+
+        recalculateOverallStreak(); // Recalculate overall streak after individual checks
+
+        if (needsSave) {
+             console.log("Saving state after daily update.");
+             saveStateToLocalStorage();
+             updateAllStats(); // Update UI if streaks changed
+        }
+    }
+    // --- Consider calling performDailyUpdate() on load after resetDailyStatusIfNeeded ---
+    // Example within DOMContentLoaded:
+    // resetDailyStatusIfNeeded();
+    // performDailyUpdate(); // Check for missed days, reset streaks
+    // renderHabits(); ...
+
+
     function renderHabit(habit) {
         const li = document.createElement('li');
         li.className = 'habit-item';
-        li.dataset.habitId = habit.id; // Store ID on the element
+        li.dataset.habitId = habit.id;
 
         li.innerHTML = `
           <div class="habit-check">
@@ -1642,21 +1961,24 @@
           <div class="habit-info">
             <div class="habit-name">${habit.name}</div>
             <div class="habit-streak">
-              <i class="fas ${habit.streak > 0 ? 'fa-bolt' : 'fa-minus'}"></i> <!-- Show bolt only if streak > 0 -->
+              <i class="fas ${habit.streak > 0 ? 'fa-bolt' : 'fa-minus'}"></i>
               <span class="streak-text">${habit.streak > 0 ? `${habit.streak} day streak` : 'No streak'}</span>
             </div>
           </div>
           <div class="habit-points">+${habit.points}</div>
+          <button class="habit-delete-btn clickable-effect" aria-label="Delete habit">
+            <i class="fas fa-trash-alt"></i>
+          </button>
         `;
 
-        const checkbox = li.querySelector('.habit-checkbox');
-        checkbox.addEventListener('change', handleHabitCheck);
+        // Checkbox listener is added via delegation later
 
         return li;
     }
 
+
     function renderHabits() {
-        habitsList.innerHTML = ''; // Clear existing list
+        habitsList.innerHTML = ''; // Clear first
         if (habits.length === 0) {
              noHabitsMessage.style.display = 'block';
         } else {
@@ -1665,54 +1987,117 @@
                 habitsList.appendChild(renderHabit(habit));
             });
         }
-        updateCompletionProgress(); // Update progress after rendering
+        // Update view based on the currently selected date *after* rendering
+        updateHabitViewForDate(viewingDate);
+        updateCompletionProgress(); // Update progress bar
     }
 
-    function handleHabitCheck(e) {
-// (Continuing the <script> block from the previous HTML)
+    // Event Listener using Delegation for Check & Delete
+    habitsList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('habit-checkbox')) {
+             handleHabitCheck(e);
+        }
+        else if (e.target.closest('.habit-delete-btn')) {
+            const habitItem = e.target.closest('.habit-item');
+            if (habitItem) { // Ensure habitItem is found
+                 const habitId = parseInt(habitItem.dataset.habitId);
+                 if (!isNaN(habitId)) { // Ensure habitId is a number
+                    handleHabitDelete(habitId, habitItem);
+                 }
+            }
+        }
+    });
 
-    const checkbox = e.target;
+
+    function handleHabitCheck(e) {
+        const checkbox = e.target;
         const habitItem = checkbox.closest('.habit-item');
         const habitId = parseInt(habitItem.dataset.habitId);
         const habit = habits.find(h => h.id === habitId);
 
-        if (!habit) return; // Safety check
+        if (!habit) return;
 
+        if (viewingDate !== getTodayDateString()) {
+            checkbox.checked = !checkbox.checked; // Prevent change and revert UI
+            alert("You can only complete habits for today.");
+            return;
+        }
+
+        const wasCompleted = habit.completedToday;
         habit.completedToday = checkbox.checked;
-        const pointsChange = habit.points * (checkbox.checked ? 1 : -1);
-        const xpChange = Math.round(habit.points * 0.5) * (checkbox.checked ? 1 : -1); // XP is half points (example)
 
-        // Update Points & XP
+        const pointsChange = habit.points * (checkbox.checked ? 1 : -1);
+        const xpChange = Math.round(habit.points * 0.5) * (checkbox.checked ? 1 : -1); // Example XP calculation
+
         userStats.points += pointsChange;
         userStats.xp += xpChange;
 
-        // --- Simple Streak Logic (Demo - Doesn't handle skipped days accurately) ---
-        // For a real app, compare lastCompleted date with yesterday/today
+        // --- Updated Streak Logic ---
         if (checkbox.checked) {
-            habit.streak = (habit.streak || 0) + 1; // Increment individual habit streak
-             habit.lastCompleted = getTodayDateString(); // Mark completion date
-             // Add visual feedback
-            habitItem.classList.add('completed-visual-feedback');
-            setTimeout(() => {
-                 habitItem.classList.remove('completed-visual-feedback');
-            }, 500);
-        } else {
-            // Resetting streak immediately on uncheck might be harsh.
-            // A real app might only reset if a day is missed.
-            // For this demo, let's just decrement (or keep it simple and don't change streak on uncheck)
-            // habit.streak = Math.max(0, (habit.streak || 0) - 1);
-            // Let's not decrement streak on uncheck for simpler demo
-        }
-        // --- End Simple Streak Logic ---
+            if (!wasCompleted) { // Only update if changing from incomplete to complete
+                 habit.lastCompleted = getTodayDateString();
+                 // Increment streak ONLY if last completion was yesterday
+                 if (habit.lastCompleted === getYesterdayDateString()) {
+                      habit.streak = (habit.streak || 0) + 1;
+                 } else if (habit.lastCompleted !== getTodayDateString()) {
+                      // If last completed wasn't yesterday or today, start a new streak
+                      habit.streak = 1;
+                 }
+                 // Else: If lastCompleted was already today, streak doesn't change further
 
-        updateHabitStreakDisplay(habitId, habit.streak); // Update only the streak text in the list
-        updateLevel(); // Check for level up *before* updating all stats display
-        updateAllStats(); // Update all displayed stats
-        updateBadges(); // Check if any badges were unlocked/locked
-        updateCompletionProgress(); // Update completion progress bar
-        // Optional: Add today's activity to calendarData simulation
-        // calendarData[getTodayDateString()] = calculateDailyActivityLevel();
-        // renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
+                 // Visual feedback
+                habitItem.classList.add('completed-visual-feedback');
+                setTimeout(() => { habitItem.classList.remove('completed-visual-feedback'); }, 500);
+            }
+        } else {
+            // Unchecking on the *same day* it was checked
+            if (wasCompleted && habit.lastCompleted === getTodayDateString()) {
+                 habit.completedToday = false; // Explicitly set
+                 habit.lastCompleted = findPreviousCompletionDate(habitId); // Find actual previous date if possible
+
+                 // If the streak was incremented *today*, decrement it back
+                 // This requires knowing if the increment happened today, complex without history.
+                 // Simplified: If unchecking today, decrement streak if it's > 0
+                 // This isn't perfectly accurate for multi-day streaks checked/unchecked same day.
+                 habit.streak = Math.max(0, (habit.streak || 0) - 1);
+
+            }
+             // No points/XP change needed here if unchecking on a later day (already handled by daily update)
+        }
+        // --- End Updated Streak Logic ---
+
+        recalculateOverallStreak(); // Update overall streak after individual change
+        updateHabitStreakDisplay(habitId, habit.streak);
+        updateLevel(); // Check for level up
+        updateAllStats(); // Update all UI elements including overall streak
+        updateBadges();
+        updateCompletionProgress();
+        updateCalendarActivityData(); // Update today's dot/activity on calendar
+        renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth()); // Re-render calendar
+
+        saveStateToLocalStorage(); // Save state after modification
+    }
+
+    // Handle Habit Deletion
+    function handleHabitDelete(habitId, habitItemElement) {
+        const habitToDelete = habits.find(h => h.id === habitId);
+        if (!habitToDelete) return;
+
+        if (confirm(`Are you sure you want to delete the habit "${habitToDelete.name}"? This cannot be undone.`)) {
+            habits = habits.filter(h => h.id !== habitId);
+            habitItemElement.remove();
+
+            if (habits.length === 0) {
+                noHabitsMessage.style.display = 'block';
+            }
+
+            updateCompletionProgress();
+            recalculateOverallStreak(); // Recalculate overall streak
+            updateAllStats(); // Update UI, especially streak display
+
+            console.log(`Habit "${habitToDelete.name}" deleted.`);
+            saveStateToLocalStorage(); // Save state after deletion
+        }
     }
 
     function updateHabitStreakDisplay(habitId, streak) {
@@ -1722,25 +2107,38 @@
             const streakIconEl = habitItem.querySelector('.habit-streak i');
             if (streak > 0) {
                 streakTextEl.textContent = `${streak} day streak`;
-                streakIconEl.className = 'fas fa-bolt'; // Ensure bolt icon
+                streakIconEl.className = 'fas fa-bolt'; // Bolt icon for active streak
             } else {
                 streakTextEl.textContent = 'No streak';
-                 streakIconEl.className = 'fas fa-minus'; // Show minus icon
+                 streakIconEl.className = 'fas fa-minus'; // Minus icon for no streak
             }
         }
     }
 
+    // Placeholder - Needs actual history lookup in a real app
+    function findPreviousCompletionDate(habitId) {
+        // Find the habit's history (if stored) and return the date before the current lastCompleted
+        // For demo: return yesterday if current lastCompleted is today, else null
+        const habit = habits.find(h => h.id === habitId);
+        if (habit && habit.lastCompleted === getTodayDateString()) {
+             return getYesterdayDateString(); // Simplistic assumption
+        }
+        return null;
+    }
 
     // --- Add Habit Modal & Form ---
     addHabitBtn.addEventListener('click', () => {
-        habitForm.reset(); // Clear form before showing
+        habitForm.reset(); // Clear form
+        // Set default values maybe?
+        document.getElementById('habitPoints').value = "10";
+        document.getElementById('habitFrequency').value = "daily";
         addHabitModal.classList.add('show');
         document.getElementById('habitName').focus(); // Focus first input
     });
 
     closeModalBtn.addEventListener('click', closeAddHabitModal);
-    addHabitModal.addEventListener('click', (e) => { // Close on overlay click
-      if (e.target === addHabitModal) {
+    addHabitModal.addEventListener('click', (e) => {
+      if (e.target === addHabitModal) { // Click on overlay background
         closeAddHabitModal();
       }
     });
@@ -1751,81 +2149,83 @@
 
     habitForm.addEventListener('submit', (e) => {
       e.preventDefault();
-
       const nameInput = document.getElementById('habitName');
       const name = nameInput.value.trim();
-      const category = document.getElementById('habitCategory').value;
-      const points = parseInt(document.getElementById('habitPoints').value);
-      const frequency = document.getElementById('habitFrequency').value;
-
       if (!name) {
-          alert("Please enter a habit name."); // Simple validation
+          alert("Please enter a habit name.");
           nameInput.focus();
           return;
       }
 
+      // Basic check for duplicate names (optional)
+       if (habits.some(h => h.name.toLowerCase() === name.toLowerCase())) {
+           if (!confirm(`A habit named "${name}" already exists. Add another one?`)) {
+               return;
+           }
+       }
+
+
       const newHabit = {
-        id: Date.now(), // Simple unique ID
+        id: Date.now(), // Use timestamp for simple unique ID
         name: name,
-        category: category,
-        points: points,
-        frequency: frequency, // Currently only 'daily' is fully handled
+        category: document.getElementById('habitCategory').value,
+        points: parseInt(document.getElementById('habitPoints').value),
+        frequency: document.getElementById('habitFrequency').value, // Only 'daily' fully supported currently
         streak: 0,
         completedToday: false,
         lastCompleted: null
       };
-
       habits.push(newHabit);
-      habitsList.appendChild(renderHabit(newHabit)); // Add directly to list
+      renderHabits(); // Re-render the list to include the new habit
 
-      // Clear message if it was the first habit
-      if (habits.length === 1) {
-          noHabitsMessage.style.display = 'none';
-      }
-
+      if (habits.length === 1) noHabitsMessage.style.display = 'none';
       closeAddHabitModal();
-      updateCompletionProgress(); // Recalculate progress
-      // No need to call updateAllStats here unless adding a habit gives points/xp immediately
-       // Save State (Optional but recommended)
-       // saveStateToLocalStorage();
+      updateCompletionProgress(); // Update progress bars
+      saveStateToLocalStorage(); // Save state after adding
     });
 
 
     // --- Stats Update Functions ---
-
     function updateAllStats() {
-        // Sidebar Stats
+        // Sidebar
         sidebarStreakEl.textContent = userStats.currentStreak;
-        sidebarPointsEl.textContent = userStats.points.toLocaleString(); // Add commas for readability
+        sidebarPointsEl.textContent = userStats.points.toLocaleString();
         sidebarLevelEl.textContent = `Level ${userStats.level}`;
-        updateXPDisplay(); // Handles XP text and bar separately
+        updateXPDisplay(); // Handles XP text and bar
 
-        // Main Content Stats
+        // Main Content
         mainStreakCountEl.textContent = userStats.currentStreak;
         mainPointsCountEl.textContent = userStats.points.toLocaleString();
 
-        // Update Encouragement/Status Texts (Examples)
+        // Encouragement/Status Texts (Improved)
         if (userStats.currentStreak === 0) {
              streakEncouragementEl.textContent = "Start a habit!";
              welcomeMessageEl.textContent = `Let's build some momentum, ${userName}!`;
-        } else if (userStats.currentStreak < 7) {
-             streakEncouragementEl.textContent = "Keep it going!";
-             welcomeMessageEl.textContent = `You're on a ${userStats.currentStreak}-day streak! Keep it up!`;
         } else {
-            streakEncouragementEl.textContent = `🔥 ${userStats.currentStreak} days strong!`;
-             welcomeMessageEl.textContent = `Amazing ${userStats.currentStreak}-day streak, ${userName}! You're crushing it!`;
+            const fireEmoji = userStats.currentStreak >= 7 ? '🔥 ' : ''; // Add fire for 7+ days
+            streakEncouragementEl.textContent = `${fireEmoji}${userStats.currentStreak} days strong!`;
+             // Vary welcome message more
+             if (userStats.currentStreak % 10 === 0) { // Milestone every 10 days
+                  welcomeMessageEl.textContent = `Wow, a ${userStats.currentStreak}-day streak! Incredible dedication, ${userName}!`;
+             } else if (userStats.currentStreak > 5) {
+                 welcomeMessageEl.textContent = `Great ${userStats.currentStreak}-day streak, ${userName}! Keep the fire burning!`;
+             } else {
+                 welcomeMessageEl.textContent = `You're on a ${userStats.currentStreak}-day streak! Keep it up, ${userName}!`;
+             }
         }
 
-        pointsStatusEl.textContent = userStats.points > 1000 ? "🏆 Great job!" : "Keep earning!";
-        // Example dynamic goal text
-        const pointsNeeded = 500 - (userStats.points % 500); // Points to next 500 increment
-        pointsGoalEl.textContent = `Earn ${pointsNeeded} more points for the next milestone.`;
+        pointsStatusEl.textContent = userStats.points > 1000 ? "🏆 Point Collector!" : "Keep earning!";
+        // Example points goal text - points to next level?
+        // const pointsToNextLevel = Math.max(0, userStats.xpToNextLevel - userStats.xp) * 2; // If 1 point = 0.5 XP
+        // pointsGoalEl.textContent = `Earn ${pointsToNextLevel} more points to reach Level ${userStats.level + 1}.`;
+        // Or keep the simpler milestone goal:
+         const pointsToMilestone = 500 - (userStats.points % 500);
+         pointsGoalEl.textContent = `Earn ${pointsToMilestone > 0 ? pointsToMilestone : 500} more points for the next milestone.`;
+
 
         updatePointsProgress(); // Update points progress bar
         updateStreakBubbles(); // Update the visual streak dates
-
-        // Save State (Optional but recommended)
-        // saveStateToLocalStorage();
+        // No saveState here, as this function just reads data
     }
 
     function updateLevel() {
@@ -1834,203 +2234,319 @@
             leveledUp = true;
             userStats.level++;
             userStats.xp -= userStats.xpToNextLevel;
-            // Increase XP needed for next level (example: 1.5x)
+            // Increase XP needed for the *next* level (example: increase by 50%)
             userStats.xpToNextLevel = Math.round(userStats.xpToNextLevel * 1.5);
-             // --- Level Up Feedback (Simple Alert) ---
-             // Replace with a more visually appealing notification in a real app
-             alert(`🎉 Level Up! You reached Level ${userStats.level}! 🎉`);
-             // --- End Level Up Feedback ---
+             // --- Level Up Feedback ---
+             // Replace alert with a nicer notification if possible
+             alert(`🎉 Level Up! You reached Level ${userStats.level}! 🎉\nNext level at ${userStats.xpToNextLevel} XP.`);
         }
-        // Update XP display only if level up occurred or if called directly after XP change
         if(leveledUp) {
-            updateXPDisplay();
-            updateBadges(); // Check badges after level up
+            updateXPDisplay(); // Update the display immediately
+            updateBadges(); // Check if level up unlocked badges
+            saveStateToLocalStorage(); // Save state because level/xpToNextLevel changed
         }
     }
 
     function updateXPDisplay() {
-         const percentage = Math.max(0, Math.min(100, (userStats.xp / userStats.xpToNextLevel) * 100));
+         // Prevent division by zero if xpToNextLevel is somehow 0
+         const xpForLevel = userStats.xpToNextLevel > 0 ? userStats.xpToNextLevel : 100;
+         const percentage = Math.max(0, Math.min(100, (userStats.xp / xpForLevel) * 100));
          sidebarLevelFillEl.style.width = `${percentage}%`;
-         sidebarXPEl.textContent = `${userStats.xp}/${userStats.xpToNextLevel} XP`;
+         sidebarXPEl.textContent = `${userStats.xp}/${xpForLevel} XP`;
     }
 
     function updateCompletionProgress() {
-        const totalHabits = habits.filter(h => h.frequency === 'daily').length; // Only count daily for now
-        if (totalHabits === 0) {
-            progressCompletionEl.textContent = '0%';
+        // Only consider 'daily' habits for this simple progress bar
+        const dailyHabits = habits.filter(h => h.frequency === 'daily');
+        const totalDailyHabits = dailyHabits.length;
+
+        if (totalDailyHabits === 0) {
+            progressCompletionEl.textContent = 'N/A';
             progressCompletionFillEl.style.width = '0%';
+            progressCompletionFillEl.className = 'progress-fill'; // Reset color
             return;
         }
-        const completedHabits = habits.filter(h => h.frequency === 'daily' && h.completedToday).length;
-        const percentage = Math.round((completedHabits / totalHabits) * 100);
+        // Count habits marked as completed *today* in the state
+        const completedDailyHabits = dailyHabits.filter(h => h.completedToday).length;
+        const percentage = Math.round((completedDailyHabits / totalDailyHabits) * 100);
+
         progressCompletionEl.textContent = `${percentage}%`;
         progressCompletionFillEl.style.width = `${percentage}%`;
 
-        // Adjust bar color based on completion (example)
-        if(percentage < 30) progressCompletionFillEl.className = 'progress-fill danger';
-        else if (percentage < 70) progressCompletionFillEl.className = 'progress-fill warning';
-        else if (percentage < 100) progressCompletionFillEl.className = 'progress-fill success';
-        else progressCompletionFillEl.className = 'progress-fill'; // Default gradient for 100%
-
-        // Potentially update overall streak (Simplified for demo)
-        // This needs proper date checking in a real app
-        const allDailyCompleted = totalHabits > 0 && completedHabits === totalHabits;
-        // Example: If all are done today, maybe increment overall streak (needs better logic)
-        // if(allDailyCompleted) { userStats.currentStreak += 1; } // Very basic demo logic
+        // Adjust bar color based on completion percentage
+        if (percentage === 100) progressCompletionFillEl.className = 'progress-fill success'; // Solid success color
+        else if (percentage >= 70) progressCompletionFillEl.className = 'progress-fill'; // Default gradient
+        else if (percentage >= 30) progressCompletionFillEl.className = 'progress-fill warning'; // Warning color gradient
+        else progressCompletionFillEl.className = 'progress-fill danger'; // Danger color gradient
     }
 
      function updatePointsProgress() {
+         // This progress bar shows progress towards the 'weeklyPointsGoal'
          if (weeklyPointsGoal <= 0) {
              progressPointsEl.textContent = 'N/A';
              progressPointsFillEl.style.width = '0%';
              return;
          }
-         // For demo, let's just use total points vs an arbitrary goal
-         const percentage = Math.min(100, Math.round((userStats.points / weeklyPointsGoal) * 100));
+         // In a real app, this should track points earned *this week*
+         // Simple demo: Use total points modulo the goal for cyclic progress
+         const pointsTowardsGoal = userStats.points % weeklyPointsGoal;
+         const percentage = Math.min(100, Math.round((pointsTowardsGoal / weeklyPointsGoal) * 100));
          progressPointsEl.textContent = `${percentage}%`;
          progressPointsFillEl.style.width = `${percentage}%`;
      }
 
      function updateStreakBubbles() {
-        streakDatesContainer.innerHTML = ''; // Clear existing bubbles
-        const today = new Date();
-        const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
-        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Start Sunday
+        // This visually represents the current *overall* streak for the last 7 days
+         streakDatesContainer.innerHTML = '';
+         const today = new Date();
+         const currentDayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+         const daysAbbr = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Sunday first
 
-        for (let i = 0; i < 7; i++) {
-            const bubble = document.createElement('div');
-            bubble.classList.add('date-bubble');
-            bubble.textContent = days[i]; // Use S M T W T F S
+         for (let i = 0; i < 7; i++) { // Loop through 7 days (Sun to Sat)
+             const bubble = document.createElement('div');
+             bubble.classList.add('date-bubble');
+             bubble.textContent = daysAbbr[i]; // Day initial
 
-            const dayIndexInStreak = dayOfWeek - i; // How many days ago? (0=today, 1=yesterday...)
+             // Calculate how many days ago this bubble represents relative to today
+             const daysAgo = (currentDayOfWeek - i + 7) % 7; // 0=today, 1=yesterday, ... 6=day before yesterday
 
-            if (i === dayOfWeek) {
-                bubble.classList.add('today');
-                 // Check if *any* habit was completed today to mark today's bubble
-                 if (habits.some(h => h.completedToday)) {
-                      bubble.classList.add('completed');
+             if (i === currentDayOfWeek) { // Is it today?
+                 bubble.classList.add('today');
+                 // Mark completed if overall streak > 0 OR if any habit is completed today
+                  if (userStats.currentStreak > 0 || habits.some(h => h.completedToday)) {
+                     bubble.classList.add('completed');
                  }
-
-            } else if (dayIndexInStreak > 0 && dayIndexInStreak <= userStats.currentStreak) {
-                // If the day was within the current streak range (and not today)
-                bubble.classList.add('completed');
-            }
-
-            // Prepend bubbles so Sunday is last visually, matching the original static HTML order
+             } else if (daysAgo > 0 && daysAgo < userStats.currentStreak) {
+                 // If the day was in the past AND within the current streak length
+                 bubble.classList.add('completed');
+             }
+             // Prepend bubbles so Sunday appears first in the container
              streakDatesContainer.prepend(bubble);
-        }
-    }
+         }
+     }
 
     // --- Badge Updates ---
     function updateBadges() {
         const badges = badgesGridEl.querySelectorAll('.badge-item');
+        let newlyUnlocked = false; // Flag to check if any new badge was unlocked
+
         badges.forEach(badge => {
             const badgeType = badge.dataset.badge;
-            let unlocked = false;
+            let shouldBeUnlocked = false; // Determine if condition is met
 
-            // Define badge unlocking conditions
+            // Define badge unlocking conditions based on userStats
             switch(badgeType) {
                 case 'streak-7':
-                    unlocked = userStats.currentStreak >= 7;
+                    shouldBeUnlocked = userStats.currentStreak >= 7;
                     break;
                 case 'streak-30':
-                    unlocked = userStats.currentStreak >= 30;
+                    shouldBeUnlocked = userStats.currentStreak >= 30;
                     break;
                  case 'legendary-streak':
-                     unlocked = userStats.currentStreak >= 90;
+                     shouldBeUnlocked = userStats.currentStreak >= 90;
                      break;
                 case 'points-500':
-                    unlocked = userStats.points >= 500;
+                    shouldBeUnlocked = userStats.points >= 500;
                     break;
-                case 'habit-master': // Example: 2000 points
-                    unlocked = userStats.points >= 2000;
+                case 'habit-master': // Example: Renamed to points-2000
+                    shouldBeUnlocked = userStats.points >= 2000;
                     break;
                 case 'perfect-week':
-                    // This requires more complex tracking (e.g., storing daily completion history)
-                    // Simple simulation: Check if current streak is >= 7 (not accurate)
-                    unlocked = userStats.currentStreak >= 7;
+                    // This requires complex tracking. Simple approximation:
+                    shouldBeUnlocked = userStats.currentStreak >= 7; // Link to 7-day streak for demo
                     break;
-                // Add more badge conditions here
+                 // Add potential Level-based badges
+                 // case 'level-5': shouldBeUnlocked = userStats.level >= 5; break;
+                 // case 'level-10': shouldBeUnlocked = userStats.level >= 10; break;
             }
 
-            if (unlocked) {
-                // Check if it *wasn't* unlocked before to show feedback
-                if (!badge.classList.contains('unlocked')) {
-                     badge.classList.add('unlocked');
-                     // Add feedback for newly unlocked badge (e.g., animation, notification)
-                     console.log(`Badge Unlocked: ${badge.querySelector('.badge-name').textContent}`);
-                }
-            } else {
-                badge.classList.remove('unlocked');
+            const wasUnlocked = badge.classList.contains('unlocked');
+
+            if (shouldBeUnlocked && !wasUnlocked) {
+                 badge.classList.add('unlocked');
+                 // Add feedback for newly unlocked badge (e.g., console log, animation)
+                 console.log(`Badge Unlocked: ${badge.querySelector('.badge-name').textContent}`);
+                 newlyUnlocked = true;
+                 // Could trigger a more visual notification here
+            } else if (!shouldBeUnlocked && wasUnlocked) {
+                // Optional: Remove unlocked status if conditions are no longer met (e.g., streak lost)
+                // badge.classList.remove('unlocked'); // Usually badges stay unlocked once earned
             }
         });
+         // If a new badge was unlocked, maybe save state? (Though badges are derived from state)
+         // if (newlyUnlocked) { saveStateToLocalStorage(); }
     }
+
 
     // --- Calendar ---
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    function renderCalendar(year, month) { // month is 0-indexed
+    // NEW: Populate calendarData based on habit history (simple version)
+    function updateCalendarActivityData() {
+        calendarData = {}; // Reset before populating
+        const todayStr = getTodayDateString();
+        habits.forEach(habit => {
+             if (habit.lastCompleted) {
+                 // For demo, just mark the last completed day as having activity
+                 // A real app would store *all* completion dates per habit
+                 if (!calendarData[habit.lastCompleted]) {
+                     calendarData[habit.lastCompleted] = 'medium'; // Mark as medium activity
+                 }
+                 // If completed today, ensure it's marked
+                  if (habit.completedToday && habit.lastCompleted === todayStr) {
+                       calendarData[todayStr] = 'high'; // Mark today as high if completed
+                  }
+             }
+        });
+        // Ensure today has at least 'low' if any habit exists but none completed
+        if (!calendarData[todayStr] && habits.length > 0) {
+             // calendarData[todayStr] = 'low'; // Optional: Mark today even if nothing done yet
+        }
+    }
+
+
+    function renderCalendar(year, month) {
         calendarMonthYearEl.textContent = `${monthNames[month]} ${year}`;
-        // Clear previous days, keep weekdays
-        const weekdays = calendarGridEl.querySelectorAll('.calendar-weekday');
-        calendarGridEl.innerHTML = '';
-        weekdays.forEach(wd => calendarGridEl.appendChild(wd));
+        const weekdays = Array.from(calendarGridEl.querySelectorAll('.calendar-weekday')); // Keep weekdays
+        calendarGridEl.innerHTML = ''; // Clear grid content
+        weekdays.forEach(wd => calendarGridEl.appendChild(wd)); // Re-add weekdays
 
         const firstDayOfMonth = new Date(year, month, 1);
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const firstDayWeekday = firstDayOfMonth.getDay(); // 0=Sun, 1=Mon...
+        const todayStr = getTodayDateString();
 
-        const today = new Date();
-        const todayDateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-        // --- Previous Month Padding ---
+        // Previous Month's Padding Days
         const daysInPrevMonth = new Date(year, month, 0).getDate();
+        const prevMonthIndex = month === 0 ? 11 : month - 1;
+        const prevYear = month === 0 ? year - 1 : year;
         for (let i = 0; i < firstDayWeekday; i++) {
              const day = daysInPrevMonth - firstDayWeekday + 1 + i;
-             const dayEl = createCalendarDay(day, true); // true = other month
+             const dateStr = `${prevYear}-${String(prevMonthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+             const dayEl = createCalendarDay(day, true, dateStr); // isOtherMonth = true
              calendarGridEl.appendChild(dayEl);
         }
 
-        // --- Current Month Days ---
+        // Current Month's Days
         for (let day = 1; day <= daysInMonth; day++) {
-             const dayEl = createCalendarDay(day, false); // false = current month
-             const currentDateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+             const dayEl = createCalendarDay(day, false, dateStr); // isOtherMonth = false
 
-             if (currentDateString === todayDateString) {
+             if (dateStr === todayStr) {
                  dayEl.classList.add('today');
              }
-
-             // Add activity indicator based on simulated data
-             const activityLevel = calendarData[currentDateString];
-             if (activityLevel) {
-                 dayEl.classList.add('has-activity'); // Add the dot indicator
-                 // Or add specific class for background color indicator:
-                 // dayEl.classList.add(`${activityLevel}-activity`);
+             if (dateStr === viewingDate) { // Highlight the selected viewing date
+                 dayEl.classList.add('selected');
              }
 
+             // Add activity indicator based on calculated calendarData
+             const activityLevel = calendarData[dateStr];
+             if (activityLevel && activityLevel !== 'none') {
+                 dayEl.classList.add('has-activity');
+                 // Optional: Add specific class based on level if desired
+                 // dayEl.classList.add(`${activityLevel}-activity`);
+             }
              calendarGridEl.appendChild(dayEl);
         }
 
-         // --- Next Month Padding ---
+         // Next Month's Padding Days
          const totalCells = firstDayWeekday + daysInMonth;
          const nextMonthPadding = (7 - (totalCells % 7)) % 7;
+         const nextMonthIndex = month === 11 ? 0 : month + 1;
+         const nextYear = month === 11 ? year + 1 : year;
          for (let i = 1; i <= nextMonthPadding; i++) {
-             const dayEl = createCalendarDay(i, true); // true = other month
+             const dateStr = `${nextYear}-${String(nextMonthIndex + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+             const dayEl = createCalendarDay(i, true, dateStr); // isOtherMonth = true
              calendarGridEl.appendChild(dayEl);
          }
     }
 
-    function createCalendarDay(day, isOtherMonth) {
+    function createCalendarDay(day, isOtherMonth, dateString) {
         const dayEl = document.createElement('div');
         dayEl.classList.add('calendar-day');
+        dayEl.dataset.date = dateString; // Store YYYY-MM-DD
+
         if (isOtherMonth) {
             dayEl.classList.add('other-month');
+             dayEl.style.cursor = 'default'; // Not clickable
+        } else {
+            // Make days in the current month clickable
+            dayEl.addEventListener('click', handleCalendarDayClick);
+            dayEl.classList.add('clickable-effect');
+            dayEl.style.cursor = 'pointer';
         }
+
         dayEl.innerHTML = `<span class="calendar-date">${day}</span>`;
-        // Potentially add activity indicator div here if not using pseudo-elements
+        // Activity indicator is added via class 'has-activity' in renderCalendar
         return dayEl;
     }
 
+    function handleCalendarDayClick(e) {
+        const clickedDayEl = e.currentTarget;
+        const dateStr = clickedDayEl.dataset.date;
+
+        if (!dateStr || dateStr === viewingDate) return; // Ignore if no date or already selected
+
+        viewingDate = dateStr; // Update the viewing date state
+
+        // Re-render calendar to update selection highlight
+        renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
+
+        // Update the habit list view for the selected date
+        updateHabitViewForDate(viewingDate);
+    }
+
+    // Update Habit List View Based on Selected Date
+    function updateHabitViewForDate(dateStr) {
+        const todayStr = getTodayDateString();
+        const isViewingToday = dateStr === todayStr;
+        // Format the date string for display
+        const displayDate = new Date(dateStr + 'T12:00:00'); // Use noon to avoid timezone issues
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = displayDate.toLocaleDateString(undefined, dateOptions);
+
+
+        // Update Habits Card Title
+        if (isViewingToday) {
+            habitsCardTitle.textContent = "Today's Habits";
+        } else {
+            habitsCardTitle.textContent = `Habits for ${formattedDate}`;
+        }
+
+        // Enable/Disable Checkboxes and Apply Styling
+        const habitItems = habitsList.querySelectorAll('.habit-item');
+        habitItems.forEach(item => {
+            const checkbox = item.querySelector('.habit-checkbox');
+            const deleteBtn = item.querySelector('.habit-delete-btn');
+            if (!checkbox) return;
+
+            if (isViewingToday) {
+                checkbox.disabled = false;
+                item.classList.remove('viewing-past');
+                item.style.opacity = '1';
+                if (deleteBtn) deleteBtn.style.display = ''; // Show delete button
+                 addHabitBtn.disabled = false; // Enable add button
+                 addHabitBtn.style.opacity = '1';
+
+            } else {
+                checkbox.disabled = true; // Disable checking
+                item.classList.add('viewing-past');
+                item.style.opacity = '0.7'; // Dim past/future view
+                if (deleteBtn) deleteBtn.style.display = 'none'; // Hide delete button when not viewing today
+                // Checkbox reflects current state, not historical
+                 addHabitBtn.disabled = true; // Disable add button
+                 addHabitBtn.style.opacity = '0.5';
+            }
+            // Ensure checkbox visually reflects the *current* state even when disabled
+            const habitId = parseInt(item.dataset.habitId);
+            const habit = habits.find(h => h.id === habitId);
+            if(habit) {
+                checkbox.checked = habit.completedToday;
+            }
+        });
+    }
+
+    // Calendar Navigation Buttons
     prevMonthBtn.addEventListener('click', () => {
         currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
         renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
@@ -2044,78 +2560,22 @@
      // --- Utility Functions ---
      function getTodayDateString() {
          const today = new Date();
-         const year = today.getFullYear();
-         const month = String(today.getMonth() + 1).padStart(2, '0');
-         const day = String(today.getDate()).padStart(2, '0');
-         return `${year}-${month}-${day}`;
+         return dateToYYYYMMDD(today);
      }
 
-     // --- Persistence (Example using localStorage - Implement if needed) ---
-     /*
-     const STORAGE_KEY = 'evolveAiHabitData';
-
-     function saveStateToLocalStorage() {
-         const state = {
-             habits: habits,
-             userStats: userStats,
-             // Add other relevant state like calendarData if it's dynamic
-         };
-         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-         console.log("State saved.");
+     function getYesterdayDateString() {
+         const yesterday = new Date();
+         yesterday.setDate(yesterday.getDate() - 1);
+          return dateToYYYYMMDD(yesterday);
      }
 
-     function loadStateFromLocalStorage() {
-         const savedState = localStorage.getItem(STORAGE_KEY);
-         if (savedState) {
-             try {
-                 const parsedState = JSON.parse(savedState);
-                 habits = parsedState.habits || habits; // Use saved or default
-                 userStats = parsedState.userStats || userStats;
-                 // Restore other state if needed
-                 console.log("State loaded.");
-                 // Crucial: Ensure loaded data reflects reality (e.g., reset completedToday for past days)
-                 resetDailyStatus();
-                 return true; // Indicate state was loaded
-             } catch (error) {
-                 console.error("Error parsing saved state:", error);
-                 localStorage.removeItem(STORAGE_KEY); // Clear corrupted data
-                 return false;
-             }
-         }
-         return false; // No saved state found
+     function dateToYYYYMMDD(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
      }
 
-     function resetDailyStatus() {
-         // This function should run on load *after* loading state
-         // It ensures 'completedToday' is false unless the habit was *actually* completed today
-         const todayStr = getTodayDateString();
-         habits.forEach(habit => {
-             if (habit.lastCompleted !== todayStr) {
-                 habit.completedToday = false;
-                 // Optional: Add logic here to check if yesterday was missed to break streaks
-             }
-         });
-     }
-
-     // --- Adjust Initialization to use Local Storage ---
-      document.addEventListener('DOMContentLoaded', () => {
-         const stateLoaded = loadStateFromLocalStorage();
-         initializeTheme();
-         initializeUser(); // Initialize user *after* potential state load
-         renderHabits(); // Render habits *after* potential state load
-         updateAllStats(); // Update stats based on loaded/default state
-         renderCalendar(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth());
-         updateBadges();
-         updateStreakBubbles();
-      });
-
-     // Call saveStateToLocalStorage() inside functions that modify state:
-     // - handleHabitCheck()
-     // - After adding a new habit in the form submit handler
-     // - Potentially after level ups if xpToNextLevel changes
-     */
-
-
-  </script>
+</script>
 </body>
 </html>
